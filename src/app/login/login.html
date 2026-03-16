@@ -1,0 +1,32 @@
+<form [formGroup]="loginForm" (ngSubmit)="submit()" class="card p-4 shadow-sm mx-auto mt-5" style="max-width: 400px;" autocomplete="off">
+	<h2 class="mb-4 text-center">Iniciar sesión</h2>
+	<div class="mb-3">
+		<label for="email" class="form-label">Email</label>
+		<input id="email" type="email" formControlName="email" required autocomplete="username" class="form-control" [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" />
+		@if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+			<div class="invalid-feedback">Email inválido</div>
+		}
+	</div>
+	<div class="mb-3">
+		<label for="password" class="form-label">Contraseña</label>
+		<input id="password" type="password" formControlName="password" required autocomplete="current-password" class="form-control" [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" />
+		@if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+			<div class="invalid-feedback">Contraseña requerida (mínimo 4 caracteres)</div>
+		}
+	</div>
+	<button type="submit" [disabled]="loginForm.invalid || loading()" class="btn btn-primary w-100">
+		@if (!loading()) {
+			Entrar
+		}
+		@if (loading()) {
+			<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+		}
+	</button>
+	@if (error()) {
+		<div class="alert alert-danger mt-3">{{ error() }}</div>
+	}
+  <div>
+	<p class="text-center mt-3 mb-0">¿No tienes cuenta? <a routerLink="/register">Regístrate</a></p>
+    <p class="text-center mt-2 mb-0"><a routerLink="/forgot-password">¿Olvidaste tu contraseña?</a></p>
+  </div>
+</form>

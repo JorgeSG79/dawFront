@@ -1,0 +1,51 @@
+<form [formGroup]="registerForm" (ngSubmit)="submit()" class="card p-4 shadow-sm mx-auto mt-5" style="max-width: 400px;" autocomplete="off">
+	<div>
+		<p class="text-center mt-3 mb-0">¿Ya tienes cuenta? <a routerLink="/">Inicia sesión</a></p>
+	</div>
+	<h2 class="mb-4 text-center">Registro de usuario</h2>
+	<div class="mb-3">
+		<label for="name" class="form-label">Nombre</label>
+		<input id="name" type="text" formControlName="name" required class="form-control" [class.is-invalid]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched" />
+		@if (registerForm.get('name')?.invalid && registerForm.get('name')?.touched) {
+			<div class="invalid-feedback">Nombre requerido (mínimo 2 caracteres)</div>
+		}
+	</div>
+	<div class="mb-3">
+		<label for="email" class="form-label">Email</label>
+		<input id="email" type="email" formControlName="email" required class="form-control" [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" />
+		@if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+			<div class="invalid-feedback">Email inválido</div>
+		}
+	</div>
+	<div class="mb-3">
+		<label for="password" class="form-label">Contraseña</label>
+		<input id="password" type="password" formControlName="password" required class="form-control" [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" />
+		@if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+			<div class="invalid-feedback">Contraseña requerida (mínimo 4 caracteres)</div>
+		}
+	</div>
+	<div class="mb-3">
+		<label for="confirmPassword" class="form-label">Repetir contraseña</label>
+		<input id="confirmPassword" type="password" formControlName="confirmPassword" required class="form-control" [class.is-invalid]="(registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched) || registerForm.errors?.['mismatch']" />
+		@if ((registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched)) {
+			<div class="invalid-feedback">Repite la contraseña</div>
+		}
+		@if (registerForm.errors?.['mismatch'] && registerForm.get('confirmPassword')?.touched) {
+			<div class="invalid-feedback">Las contraseñas no coinciden</div>
+		}
+	</div>
+	<button type="submit" [disabled]="registerForm.invalid || loading()" class="btn btn-success w-100">
+		@if (!loading()) {
+			Registrarse
+		}
+		@if (loading()) {
+			<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+		}
+	</button>
+	@if (error()) {
+		<div class="alert alert-danger mt-3">{{ error() }}</div>
+	}
+	@if (success()) {
+		<div class="alert alert-success mt-3">{{ success() }}</div>
+	}
+</form>
