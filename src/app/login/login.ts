@@ -1,7 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -14,8 +14,10 @@ export class Login {
   loginForm;
   loading = signal(false);
   error = signal('');
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
 
-  constructor(private fb: FormBuilder) {
+  constructor() {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(4)]],
@@ -33,7 +35,7 @@ export class Login {
     setTimeout(() => {
       this.loading.set(false);
       // Aquí iría la lógica real de autenticación
-      alert('Login correcto (simulado)');
+      this.router.navigate(['/dashboard']);
     }, 1000);
   }
 }

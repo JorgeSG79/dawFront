@@ -1,0 +1,38 @@
+<div class="card p-4 shadow-sm mx-auto mt-5" style="max-width: 400px;">
+  <h2 class="mb-4 text-center">Recuperar acceso</h2>
+  <form [formGroup]="recoveryForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+      <label for="email" class="form-label">Email:</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        placeholder="Ingresa tu email"
+        required
+        class="form-control"
+        [class.is-invalid]="recoveryForm.get('email')?.invalid && recoveryForm.get('email')?.touched"
+      />
+      @if (recoveryForm.get('email')?.invalid && recoveryForm.get('email')?.touched) {
+        <div class="invalid-feedback">
+          @if (recoveryForm.get('email')?.errors?.['required']) {
+            Email requerido.
+          }
+          @if (recoveryForm.get('email')?.errors?.['email']) {
+            Ingresa un email válido.
+          }
+        </div>
+      }
+    </div>
+    <button type="submit" [disabled]="recoveryForm.invalid || isLoading()" class="btn btn-primary w-100">
+      @if (isLoading()) {
+        Enviando...
+      } @else {
+        Enviar email de recuperación
+      }
+    </button>
+  </form>
+  @if (message()) {
+    <div class="alert alert-info mt-3">{{ message() }}</div>
+  }
+  <p class="text-center mt-3 mb-0"><a routerLink="/">Volver al login</a></p>
+</div>
