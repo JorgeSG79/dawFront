@@ -1,0 +1,74 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">{{ isAdmin ? 'Todas las recargas' : 'Mis recargas' }}</h4>
+    <a routerLink="/dashboard" class="btn btn-sm btn-outline-primary">
+      <i class="fa-solid fa-arrow-left me-1"></i> Volver al Dashboard
+    </a>
+  </div>
+
+  @if (loading) {
+    <div class="d-flex justify-content-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert alert-danger">{{ error }}</div>
+  }
+
+  @if (!loading && !error) {
+    @if (recargas.length === 0) {
+      <div class="alert alert-info">No tienes recargas registradas todavía.</div>
+    } @else {
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th>#</th>
+                  <th>Reserva</th>
+                  <th>Vehículo</th>
+                  <th>Punto recarga</th>
+                  <th>Tarifa</th>
+                  <th>Inicio</th>
+                  <th>Fin</th>
+                  <th>Duración (min)</th>
+                  <th>kWh</th>
+                  <th>Coste</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of recargas; track r.id) {
+                  <tr>
+                    <td>{{ r.id }}</td>
+                    <td>{{ r.reserva_id ?? '—' }}</td>
+                    <td>{{ r.vehiculo_id }}</td>
+                    <td>{{ r.punto_recarga_id }}</td>
+                    <td>{{ r.tarifa_id ?? '—' }}</td>
+                    <td>{{ r.fecha_inicio | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ r.fecha_fin ? (r.fecha_fin | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+                    <td>{{ r.duracion_minutos ?? '—' }}</td>
+                    <td>{{ r.kwh_consumidos ?? '—' }}</td>
+                    <td>
+                      @if (r.coste_total != null) {
+                        <span class="fw-semibold text-success">{{ r.coste_total | number:'1.2-2' }} €</span>
+                      } @else {
+                        —
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer text-muted small">
+          {{ recargas.length }} recarga(s) encontrada(s)
+        </div>
+      </div>
+    }
+  }
+</div>

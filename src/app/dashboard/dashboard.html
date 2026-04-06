@@ -1,7 +1,139 @@
+<div class="min-vh-100 bg-body-tertiary">
+  <nav class="navbar navbar-light bg-primary-subtle border-bottom py-2">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Mi Dashboard</a>
 
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge rounded-pill" [class.text-bg-warning]="isAdmin" [class.text-bg-primary]="isCliente">
+          {{ isAdmin ? 'ADMIN' : 'CLIENTE' }}
+        </span>
 
-<div class="dashboard-container">
-  <h1>Bienvenido al Dashboard</h1>
-  <p>Aquí puedes gestionar tu cuenta y ver información relevante.</p>
-<div id="map" style="height: 500px;"></div>  <button (click)="logout()" class="btn btn-danger mt-3">Cerrar sesión</button>
+        @if (isCliente) {
+          <a routerLink="/recargas" class="btn btn-sm btn-outline-light border">
+            <i class="fa-solid fa-bolt me-1"></i> Mis recargas
+          </a>
+        }
+
+        @if (isAdmin) {
+          <a routerLink="/recargas" class="btn btn-sm btn-outline-light border">
+            <i class="fa-solid fa-bolt me-1"></i> Recargas
+          </a>
+          <a routerLink="/new-station" class="btn btn-sm btn-warning">
+            <i class="fa-solid fa-plus me-1"></i> Nueva estación
+          </a>
+        }
+
+        <div class="dropdown">
+          <button
+            class="btn btn-sm btn-light border"
+            type="button"
+            id="userMenu"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="fa-solid fa-user"></i>
+          </button>
+
+          <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userMenu">
+            <li>
+              <h6 class="dropdown-header">{{ userName }}</h6>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/profile" style="cursor: pointer;">
+                <i class="fa-solid fa-id-card me-2"></i>Perfil
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item text-danger" href="javascript:void(0)" (click)="logout()">
+                <i class="fa-solid fa-right-from-bracket me-2"></i>Cerrar sesión
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container-fluid px-3 px-md-4 py-3">
+      @if (isAdmin) {
+        <section class="alert alert-warning mb-3 py-2">
+          <h5 class="mb-1">Panel de administrador</h5>
+          <p class="mb-0">Visualizas la red completa de estaciones con sus datos de disponibilidad.</p>
+        </section>
+      } @else {
+        <section class="alert alert-primary mb-3 py-2">
+          <h5 class="mb-1">Mapa de estaciones disponibles</h5>
+          <p class="mb-0">Como cliente, aquí tienes todos los puntos y, abajo, la información de tu vehículo.</p>
+        </section>
+      }
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <div class="card-title d-flex justify-content-between align-items-center mb-3">
+            <h6 class="text-secondary mb-0">Estaciones de carga</h6>
+            <span class="badge rounded-pill text-bg-light border">{{ estacionesCount }} estaciones</span>
+          </div>
+          <div id="map"></div>
+        </div>
+      </div>
+
+      @if (isCliente) {
+        <section class="card shadow-sm border-0 mt-4">
+          <div class="card-header bg-primary text-white">
+            <h6 class="mb-0">Mi vehículo</h6>
+          </div>
+
+          @if (misCoches.length > 0) {
+            <div class="card-body">
+              <div class="row g-3 align-items-start">
+                <div class="col-12 col-md-6">
+                  <p class="text-muted small mb-1">Vehículo seleccionado</p>
+                  <h5 class="text-primary-emphasis mb-1">{{ selectedVehicle?.marca }} {{ selectedVehicle?.modelo }}</h5>
+                  <p class="fw-semibold mb-0">{{ selectedVehicle?.matricula }}</p>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <div class="border rounded p-2 bg-light h-100">
+                        <div class="small text-muted">Batería</div>
+                        <div class="fw-semibold text-primary">{{ selectedVehicle?.capacidad_bateria ?? selectedVehicle?.capacidadBateria ?? 'Sin dato' }}</div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="border rounded p-2 bg-light h-100">
+                        <div class="small text-muted">Conector</div>
+                        <div class="fw-semibold text-primary">{{ selectedVehicle?.tipo_conector ?? selectedVehicle?.tipoConector ?? 'Sin dato' }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            @if (misCoches.length > 1) {
+              <div class="card-footer bg-white d-flex flex-wrap gap-2">
+                @for (coche of misCoches; track $index) {
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    [class.btn-primary]="$index === selectedVehicleIndex"
+                    [class.btn-outline-primary]="$index !== selectedVehicleIndex"
+                    (click)="selectVehicle($index)"
+                  >
+                    {{ coche.marca }} {{ coche.modelo }} - {{ coche.matricula }}
+                  </button>
+                }
+              </div>
+            }
+          } @else {
+            <div class="card-body text-muted">No tienes vehículos asociados todavía.</div>
+          }
+        </section>
+      }
+
+      <router-outlet></router-outlet>
+    </div>
+  </main>
 </div>

@@ -1,0 +1,242 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white text-center py-4">
+          <h4 class="mb-0">Mi Perfil</h4>
+        </div>
+        <div class="card-body p-4">
+          <div class="row align-items-center">
+
+            <div class="col-md-4 text-center mb-4 mb-md-0">
+              <img [src]="user.avatar" class="rounded-circle img-thumbnail shadow-sm" alt="Avatar">
+              <div class="mt-3">
+                <span class="badge bg-info text-dark">{{ user.role }}</span>
+              </div>
+            </div>
+
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label class="text-muted small d-block">Nombre Completo</label>
+                @if (!profileEditMode) {
+                  <p class="h5 border-bottom pb-2">{{ user.firstName }} {{ user.lastName }}</p>
+                } @else {
+                  <div class="row g-2 border-bottom pb-2">
+                    <div class="col-6">
+                      <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        [value]="editableProfile.firstName"
+                        (input)="updateProfileField('firstName', $event)"
+                        placeholder="Nombre"
+                      />
+                    </div>
+                    <div class="col-6">
+                      <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        [value]="editableProfile.lastName"
+                        (input)="updateProfileField('lastName', $event)"
+                        placeholder="Apellidos"
+                      />
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label class="text-muted small d-block">Correo Electrónico</label>
+                @if (!profileEditMode) {
+                  <p class="h5 border-bottom pb-2">
+                    <i class="fa-solid fa-envelope me-2 text-primary"></i>{{ user.email }}
+                  </p>
+                } @else {
+                  <div class="border-bottom pb-2">
+                    <input
+                      type="email"
+                      class="form-control form-control-sm"
+                      [value]="editableProfile.email"
+                      (input)="updateProfileField('email', $event)"
+                      placeholder="Correo electrónico"
+                    />
+                  </div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label class="text-muted small d-block">Miembro desde</label>
+                <p class="h5 border-bottom pb-2">
+                  <i class="fa-solid fa-calendar-check me-2 text-primary"></i>{{ user.joinedDate }}
+                </p>
+              </div>
+
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <a routerLink="/dashboard" class="btn btn-primary btn-sm">
+                  <i class="fa-solid fa-arrow-left me-1"></i> Volver al Dashboard
+                </a>
+                <button type="button" class="btn btn-success btn-sm" (click)="toggleVehicleForm()">
+                  <i class="fa-solid fa-car me-1"></i>
+                  {{ showVehicleForm ? 'Ocultar formulario vehiculo' : 'Anadir datos del vehiculo' }}
+                </button>
+                @if (!profileEditMode) {
+                  <button type="button" class="btn btn-outline-primary btn-sm" (click)="startEditProfile()">
+                    <i class="fa-solid fa-pen-to-square me-1"></i> Editar Perfil
+                  </button>
+                } @else {
+                  <button type="button" class="btn btn-outline-success btn-sm" (click)="saveProfile()">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Perfil
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-sm" (click)="cancelEditProfile()">
+                    <i class="fa-solid fa-xmark me-1"></i> Cancelar
+                  </button>
+                }
+                <button type="button" class="btn btn-outline-secondary btn-sm" (click)="togglePasswordForm()">
+                  <i class="fa-solid fa-key me-1"></i> Cambiar Contraseña
+                </button>
+              </div>
+
+              @if (profileError) {
+                <div class="alert alert-danger mt-3 mb-0">{{ profileError }}</div>
+              }
+
+              @if (profileSaved) {
+                <div class="alert alert-success mt-3 mb-0">Perfil actualizado correctamente.</div>
+              }
+
+              @if (showPasswordForm) {
+                <form class="vehicle-form mt-4" (ngSubmit)="submitPasswordChange()">
+                  <h5 class="mb-3">Cambiar contraseña</h5>
+
+                  <div class="row g-3">
+                    <div class="col-md-12">
+                      <label class="form-label">Contraseña actual</label>
+                      <input
+                        type="password"
+                        class="form-control"
+                        [value]="passwordData.actual"
+                        (input)="updatePasswordField('actual', $event)"
+                      />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Nueva contraseña</label>
+                      <input
+                        type="password"
+                        class="form-control"
+                        [value]="passwordData.nueva"
+                        (input)="updatePasswordField('nueva', $event)"
+                      />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Repetir nueva contraseña</label>
+                      <input
+                        type="password"
+                        class="form-control"
+                        [value]="passwordData.repetir"
+                        (input)="updatePasswordField('repetir', $event)"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="d-flex justify-content-end mt-3">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                      Guardar contraseña
+                    </button>
+                  </div>
+
+                  @if (passwordError) {
+                    <div class="alert alert-danger mt-3 mb-0">{{ passwordError }}</div>
+                  }
+
+                  @if (passwordSaved) {
+                    <div class="alert alert-success mt-3 mb-0">Contraseña actualizada correctamente.</div>
+                  }
+                </form>
+              }
+
+              @if (showVehicleForm) {
+                <form class="vehicle-form mt-4" (ngSubmit)="submitVehicle()">
+                  <h5 class="mb-3">Nuevo vehiculo</h5>
+
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Marca</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        [value]="vehicleData.marca"
+                        (input)="updateVehicleField('marca', $event)"
+                      />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Modelo</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        [value]="vehicleData.modelo"
+                        (input)="updateVehicleField('modelo', $event)"
+                      />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Matricula</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        [value]="vehicleData.matricula"
+                        (input)="updateVehicleField('matricula', $event)"
+                      />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Capacidad de la bateria (kWh)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        class="form-control"
+                        [value]="vehicleData.capacidadBateria ?? ''"
+                        (input)="updateBattery($event)"
+                      />
+                    </div>
+
+                    <div class="col-md-12">
+                      <label class="form-label">Tipo de conector</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        [value]="vehicleData.tipoConector"
+                        (input)="updateVehicleField('tipoConector', $event)"
+                        placeholder="Ej: Type 2, CCS, CHAdeMO"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="d-flex justify-content-end mt-3">
+                    <button type="submit" class="btn btn-success btn-sm">
+                      Guardar vehiculo
+                    </button>
+                  </div>
+
+                  @if (vehicleError) {
+                    <div class="alert alert-danger mt-3 mb-0">
+                      {{ vehicleError }}
+                    </div>
+                  }
+
+                  @if (vehicleCreated) {
+                    <div class="alert alert-success mt-3 mb-0">
+                      Vehiculo anadido correctamente.
+                    </div>
+                  }
+                </form>
+              }
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
