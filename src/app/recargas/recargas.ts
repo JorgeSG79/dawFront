@@ -1,7 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { finalize } from 'rxjs';
 import { DataService } from '../services/data.service';
+import { AuthService } from '../services/auth.service';
 import { Recarga } from '../models/interfaces';
 
 @Component({
@@ -10,9 +12,12 @@ import { Recarga } from '../models/interfaces';
   imports: [CommonModule, RouterModule],
   templateUrl: './recargas.html',
   styleUrl: './recargas.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Recargas implements OnInit {
   private dataService = inject(DataService);
+  private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
 
   recargas: Recarga[] = [];
   loading = true;
@@ -20,30 +25,34 @@ export class Recargas implements OnInit {
   isAdmin = false;
 
   ngOnInit() {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser);
-        const rol = (user?.rol ?? user?.role ?? '').toLowerCase();
-        this.isAdmin = rol === 'admin';
-      } catch {
-        this.isAdmin = false;
-      }
-    }
+    this.isAdmin = this.authService.isAdmin();
+    this.cdr.markForCheck();
+    this.loadRecargas();
+  }
 
-    const llamada$ = this.isAdmin
-      ? this.dataService.getTodasRecargas()
-      : this.dataService.getMisRecargas();
+  private loadRecargas() {
+    this.loading = true;
+    this.error = '';
+    this.cdr.markForCheck();
 
-    llamada$.subscribe({
-      next: (data) => {
-        this.recargas = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.error = 'No se pudieron cargar las recargas.';
-        this.loading = false;
-      }
-    });
+    // El backend discrimina automaticamente segun el token
+    this.dataService.getRecargas()
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: (data) => {
+          this.recargas = Array.isArray(data) ? data : [];
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'No se pudieron cargar las recargas.';
+          this.recargas = [];
+          this.cdr.markForCheck();
+        }
+      });
   }
 }

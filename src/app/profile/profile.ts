@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-profile',
@@ -9,7 +10,10 @@ import { RouterModule } from '@angular/router';
   templateUrl: './profile.html',
   styleUrls: ['./profile.css']
 })
-export class Profile {
+export class Profile implements OnInit {
+  private authService = inject(AuthService);
+  isLoadingProfile = false;
+  isLoadingPassword = false;
   showVehicleForm = false;
   showPasswordForm = false;
   vehicleCreated = false;
@@ -49,6 +53,29 @@ export class Profile {
     lastName: this.user.lastName,
     email: this.user.email,
   };
+
+  ngOnInit() {
+    this.loadUserData();
+  }
+
+  private loadUserData() {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.user = {
+        firstName: currentUser.nombre || currentUser.firstName || 'Usuario',
+        lastName: currentUser.apellido || currentUser.lastName || '',
+        email: currentUser.email || '',
+        role: currentUser.rol || 'cliente',
+        joinedDate: currentUser.joinedDate || 'Desconocida',
+        avatar: `https://ui-avatars.com/api/?name=${currentUser.nombre || 'User'}&background=e3f2fd&color=0d6efd&size=128`,
+      };
+      this.editableProfile = {
+        firstName: this.user.firstName,
+        lastName: this.user.lastName,
+        email: this.user.email,
+      };
+    }
+  }
 
   toggleVehicleForm() {
     this.showVehicleForm = !this.showVehicleForm;
@@ -136,13 +163,23 @@ export class Profile {
       return;
     }
 
-    console.log('Cambio de contraseña preparado.');
-    this.passwordSaved = true;
-    this.passwordData = {
-      actual: '',
-      nueva: '',
-      repetir: '',
-    };
+    this.isLoadingPassword = true;
+    this.authService.changePassword(this.passwordData.actual, this.passwordData.nueva).subscribe({
+      next: () => {
+        this.isLoadingPassword = false;
+        this.passwordSaved = true;
+        this.passwordData = {
+          actual: '',
+          nueva: '',
+          repetir: '',
+        };
+        this.showPasswordForm = false;
+      },
+      error: (err) => {
+        this.isLoadingPassword = false;
+        this.passwordError = err.error?.message || 'Error al cambiar la contraseña. Verifica tu contraseña actual.';
+      }
+    });
   }
 
   startEditProfile() {
@@ -181,14 +218,29 @@ export class Profile {
       return;
     }
 
-    this.user = {
-      ...this.user,
-      firstName: this.editableProfile.firstName.trim(),
-      lastName: this.editableProfile.lastName.trim(),
+    this.isLoadingProfile = true;
+    const updatePayload = {
+      nombre: this.editableProfile.firstName.trim(),
+      apellido: this.editableProfile.lastName.trim(),
       email: this.editableProfile.email.trim(),
     };
 
-    this.profileEditMode = false;
-    this.profileSaved = true;
+    this.authService.updateProfile(updatePayload).subscribe({
+      next: (res) => {
+        this.isLoadingProfile = false;
+        this.user = {
+          ...this.user,
+          firstName: this.editableProfile.firstName.trim(),
+          lastName: this.editableProfile.lastName.trim(),
+          email: this.editableProfile.email.trim(),
+        };
+        this.profileEditMode = false;
+        this.profileSaved = true;
+      },
+      error: (err) => {
+        this.isLoadingProfile = false;
+        this.profileError = err.error?.message || 'Error al guardar el perfil. Inténtalo de nuevo.';
+      }
+    });
   }
 }

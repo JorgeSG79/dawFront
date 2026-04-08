@@ -12,6 +12,12 @@ export interface Vehiculo {
   modelo: string;
 }
 
+export interface Punto {
+  id: number;
+  nombre: string;
+  activo: number;
+}
+
 export interface Estacion {
   id: number;
   nombre: string;
@@ -19,24 +25,28 @@ export interface Estacion {
   ciudad?: string;
   provincia?: string;
   codigo_postal?: string;
-  activo?: number;
   latitud: number | string;
   longitud: number | string;
-  num_puntos: number;
-  conectores_disponibles: string | null;
+  puntos: Punto[];
+  // Propiedades derivadas para compatibilidad
+  num_puntos?: number;
+  conectores_disponibles?: string | null;
 }
 
 export interface Recarga {
   id: number;
-  reserva_id: number | null;
   usuario_id: number;
+  punto_id: number;
   vehiculo_id: number;
-  punto_recarga_id: number;
   tarifa_id: number | null;
-  fecha_inicio: string;
-  fecha_fin: string | null;
-  duracion_minutos: number | null;
-  kwh_consumidos: number | null;
-  coste_total: number | null;
-  matricula?: string;
+  fecha_reserva: string;
+  nombre_punto: string;
+  matricula: string;
+  modelo: string;
+  // Campos opcionales si el backend los agrega después
+  fecha_inicio?: string;
+  fecha_fin?: string | null;
+  duracion_minutos?: number | null;
+  kwh_consumidos?: number | null;
+  coste_total?: number | null;
 }

@@ -29,36 +29,24 @@
               <thead class="table-primary">
                 <tr>
                   <th>#</th>
-                  <th>Reserva</th>
+                  <th>Punto de carga</th>
                   <th>Vehículo</th>
-                  <th>Punto recarga</th>
+                  <th>Matrícula</th>
+                  <th>Modelo</th>
                   <th>Tarifa</th>
-                  <th>Inicio</th>
-                  <th>Fin</th>
-                  <th>Duración (min)</th>
-                  <th>kWh</th>
-                  <th>Coste</th>
+                  <th>Fecha Reserva</th>
                 </tr>
               </thead>
               <tbody>
                 @for (r of recargas; track r.id) {
                   <tr>
                     <td>{{ r.id }}</td>
-                    <td>{{ r.reserva_id ?? '—' }}</td>
+                    <td>{{ r.nombre_punto }}</td>
                     <td>{{ r.vehiculo_id }}</td>
-                    <td>{{ r.punto_recarga_id }}</td>
+                    <td>{{ r.matricula }}</td>
+                    <td>{{ r.modelo }}</td>
                     <td>{{ r.tarifa_id ?? '—' }}</td>
-                    <td>{{ r.fecha_inicio | date:'dd/MM/yyyy HH:mm' }}</td>
-                    <td>{{ r.fecha_fin ? (r.fecha_fin | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
-                    <td>{{ r.duracion_minutos ?? '—' }}</td>
-                    <td>{{ r.kwh_consumidos ?? '—' }}</td>
-                    <td>
-                      @if (r.coste_total != null) {
-                        <span class="fw-semibold text-success">{{ r.coste_total | number:'1.2-2' }} €</span>
-                      } @else {
-                        —
-                      }
-                    </td>
+                    <td>{{ r.fecha_reserva | date:'dd/MM/yyyy HH:mm' }}</td>
                   </tr>
                 }
               </tbody>

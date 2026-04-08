@@ -134,6 +134,88 @@
       }
 
       <router-outlet></router-outlet>
+
+      <!-- Modal de Reserva -->
+      @if (showReservaModal && estacionSeleccionada) {
+        <div class="modal d-block" style="background-color: rgba(0, 0, 0, 0.5);">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Reservar punto de carga</h5>
+                <button type="button" class="btn-close" (click)="cerrarModalReserva()"></button>
+              </div>
+              <form [formGroup]="reservaForm" (ngSubmit)="hacerReserva()">
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Estación seleccionada</label>
+                    <p class="card-text">
+                      <strong>{{ estacionSeleccionada.nombre }}</strong><br>
+                      <small class="text-muted">{{ estacionSeleccionada.direccion }}</small>
+                    </p>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Tu vehículo</label>
+                    <p class="card-text">
+                      @if (selectedVehicle) {
+                        <strong>{{ selectedVehicle.marca }} {{ selectedVehicle.modelo }}</strong><br>
+                        <small class="text-muted">{{ selectedVehicle.matricula }}</small>
+                      } @else {
+                        <span class="text-danger">Por favor, selecciona un vehículo.</span>
+                      }
+                    </p>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="punto_id" class="form-label">Punto de carga</label>
+                    <select id="punto_id" class="form-select" formControlName="punto_id" required>
+                      <option value="">-- Selecciona un punto --</option>
+                      @for (punto of puntosDisponibles; track punto.id) {
+                        <option [value]="punto.id">{{ punto.nombre }} (Activo)</option>
+                      }
+                    </select>
+                    @if (reservaForm.get('punto_id')?.invalid && reservaForm.get('punto_id')?.touched) {
+                      <div class="invalid-feedback d-block">Debes seleccionar un punto</div>
+                    }
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label for="fecha_reserva" class="form-label">Fecha de reserva</label>
+                      <input type="date" id="fecha_reserva" class="form-control" formControlName="fecha_reserva" required />
+                    </div>
+                    <div class="col-md-6">
+                      <label for="tarifa_id" class="form-label">Tarifa (opcional)</label>
+                      <select id="tarifa_id" class="form-select" formControlName="tarifa_id">
+                        <option value="">-- Sin tarifa específica --</option>
+                        <option value="1">Tarifa 1 - Económica</option>
+                        <option value="2">Tarifa 2 - Estándar</option>
+                        <option value="3">Tarifa 3 - Premium</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  @if (reservaError) {
+                    <div class="alert alert-danger mt-3 mb-0">{{ reservaError }}</div>
+                  }
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" (click)="cerrarModalReserva()">
+                    Cancelar
+                  </button>
+                  <button type="submit" class="btn btn-primary" [disabled]="reservandoStatus || !selectedVehicle">
+                    @if (!reservandoStatus) {
+                      <i class="fa-solid fa-calendar-check me-1"></i> Reservar
+                    } @else {
+                      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Reservando...
+                    }
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   </main>
 </div>

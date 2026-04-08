@@ -83,10 +83,14 @@
                     <i class="fa-solid fa-pen-to-square me-1"></i> Editar Perfil
                   </button>
                 } @else {
-                  <button type="button" class="btn btn-outline-success btn-sm" (click)="saveProfile()">
-                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Perfil
+                  <button type="button" class="btn btn-outline-success btn-sm" (click)="saveProfile()" [disabled]="isLoadingProfile">
+                    @if (!isLoadingProfile) {
+                      <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Perfil
+                    } @else {
+                      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...
+                    }
                   </button>
-                  <button type="button" class="btn btn-outline-danger btn-sm" (click)="cancelEditProfile()">
+                  <button type="button" class="btn btn-outline-danger btn-sm" (click)="cancelEditProfile()" [disabled]="isLoadingProfile">
                     <i class="fa-solid fa-xmark me-1"></i> Cancelar
                   </button>
                 }
@@ -140,8 +144,12 @@
                   </div>
 
                   <div class="d-flex justify-content-end mt-3">
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">
-                      Guardar contraseña
+                    <button type="submit" class="btn btn-outline-secondary btn-sm" [disabled]="isLoadingPassword">
+                      @if (!isLoadingPassword) {
+                        Guardar contraseña
+                      } @else {
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...
+                      }
                     </button>
                   </div>
 

@@ -55,8 +55,7 @@ export class NewStation {
       !this.stationData.ciudad.trim() ||
       !this.stationData.provincia.trim() ||
       !this.stationData.latitud.trim() ||
-      !this.stationData.longitud.trim() ||
-      this.stationData.num_puntos === null
+      !this.stationData.longitud.trim()
     ) {
       this.error = 'Completa todos los campos obligatorios.';
       return;
@@ -64,9 +63,13 @@ export class NewStation {
 
     this.loading = true;
     this.dataService.crearEstacion({
-      ...this.stationData,
-      num_puntos: this.stationData.num_puntos!,
-      conectores_disponibles: this.stationData.conectores_disponibles || null,
+      nombre: this.stationData.nombre,
+      direccion: this.stationData.direccion,
+      ciudad: this.stationData.ciudad,
+      provincia: this.stationData.provincia,
+      codigo_postal: this.stationData.codigo_postal,
+      latitud: this.stationData.latitud,
+      longitud: this.stationData.longitud,
     }).subscribe({
       next: () => {
         this.success = true;
