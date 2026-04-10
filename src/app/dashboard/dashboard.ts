@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, AfterViewInit, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, AfterViewInit, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { DataService } from '../services/data.service';
@@ -20,6 +20,7 @@ export class Dashboard implements AfterViewInit, OnInit {
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
   private fb = inject(FormBuilder);
+  private ngZone = inject(NgZone);
   map: any; // Guarda la referencia aquí
   misCoches: any[] = [];
   estacionesCount = 0;
@@ -34,7 +35,7 @@ export class Dashboard implements AfterViewInit, OnInit {
   reservaForm = this.fb.group({
     punto_id: ['', Validators.required],
     fecha_reserva: [new Date().toISOString().split('T')[0], Validators.required],
-    tarifa_id: [''],
+    tarifa_id: [null as number | null],
   });
   reservandoStatus = false;
   reservaError = '';
@@ -50,6 +51,18 @@ export class Dashboard implements AfterViewInit, OnInit {
 
   get selectedVehicle() {
     return this.misCoches[this.selectedVehicleIndex] ?? null;
+  }
+
+  private getEstadoPunto(punto: Punto): string {
+    return (punto.estado_actual ?? '').trim().toLowerCase();
+  }
+
+  private isPuntoDisponible(punto: Punto): boolean {
+    const estado = this.getEstadoPunto(punto);
+    if (estado) {
+      return punto.activo === 1 && estado === 'disponible';
+    }
+    return punto.activo === 1;
   }
 
   ngOnInit() {
@@ -73,13 +86,13 @@ export class Dashboard implements AfterViewInit, OnInit {
 
   abrirModalReserva(estacion: Estacion) {
     this.estacionSeleccionada = estacion;
-    this.puntosDisponibles = estacion.puntos?.filter(p => p.activo === 1) ?? [];
+    this.puntosDisponibles = estacion.puntos?.filter(p => this.isPuntoDisponible(p)) ?? [];
     this.showReservaModal = true;
     this.reservaError = '';
     this.reservaForm.reset({
       punto_id: '',
       fecha_reserva: new Date().toISOString().split('T')[0],
-      tarifa_id: '',
+      tarifa_id: estacion.tarifa?.id ?? null,
     });
     this.cdr.markForCheck();
   }
@@ -103,7 +116,7 @@ export class Dashboard implements AfterViewInit, OnInit {
       vehiculo_id: this.selectedVehicle.id,
       punto_id: Number(this.reservaForm.get('punto_id')?.value),
       fecha_reserva: this.reservaForm.get('fecha_reserva')?.value ?? '',
-      tarifa_id: this.reservaForm.get('tarifa_id')?.value ? Number(this.reservaForm.get('tarifa_id')?.value) : null,
+      tarifa_id: this.reservaForm.get('tarifa_id')?.value ?? null,
     };
 
     this.dataService.crearReserva(reserva).subscribe({
@@ -149,17 +162,21 @@ export class Dashboard implements AfterViewInit, OnInit {
             const marker = L.marker([lat, lng]).addTo(this.map);
             const ubicacion = [est.ciudad, est.provincia].filter(Boolean).join(', ');
 
-            // Contar puntos activos e inactivos
-            const puntosActivos = est.puntos?.filter(p => p.activo === 1).length ?? 0;
-            const puntosInactivos = est.puntos?.filter(p => p.activo === 0).length ?? 0;
+            // Contar puntos realmente disponibles para reserva
+            const puntosActivos = est.puntos?.filter(p => this.isPuntoDisponible(p)).length ?? 0;
             const totalPuntos = est.puntos?.length ?? 0;
             const conectoresInfo = `${puntosActivos}/${totalPuntos} disponibles`;
 
             // Generar tabla de puntos
             let puntosHtml = '<table class="table table-sm mb-2"><tbody>';
             est.puntos?.forEach(punto => {
-              const estado = punto.activo === 1 ? '✓ Activo' : '✗ Inactivo';
-              const badgeClass = punto.activo === 1 ? 'bg-success' : 'bg-danger';
+              const estadoActual = this.getEstadoPunto(punto);
+              const estado = estadoActual || (punto.activo === 1 ? 'disponible' : 'fuera de servicio');
+              const badgeClass = estado === 'disponible'
+                ? 'bg-success'
+                : estado === 'ocupado'
+                  ? 'bg-warning text-dark'
+                  : 'bg-danger';
               puntosHtml += `<tr><td><small>${punto.nombre}</small></td><td><span class="badge ${badgeClass}">${estado}</span></td></tr>`;
             });
             puntosHtml += '</tbody></table>';
@@ -185,7 +202,9 @@ export class Dashboard implements AfterViewInit, OnInit {
               const btn = document.getElementById(`btn-reserva-${est.id}`);
               if (btn) {
                 btn.addEventListener('click', () => {
-                  this.abrirModalReserva(est);
+                  this.ngZone.run(() => {
+                    this.abrirModalReserva(est);
+                  });
                 });
               }
             });

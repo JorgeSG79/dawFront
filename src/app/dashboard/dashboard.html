@@ -185,13 +185,16 @@
                       <input type="date" id="fecha_reserva" class="form-control" formControlName="fecha_reserva" required />
                     </div>
                     <div class="col-md-6">
-                      <label for="tarifa_id" class="form-label">Tarifa (opcional)</label>
-                      <select id="tarifa_id" class="form-select" formControlName="tarifa_id">
-                        <option value="">-- Sin tarifa específica --</option>
-                        <option value="1">Tarifa 1 - Económica</option>
-                        <option value="2">Tarifa 2 - Estándar</option>
-                        <option value="3">Tarifa 3 - Premium</option>
-                      </select>
+                      <label class="form-label">Tarifa aplicada</label>
+                      @if (estacionSeleccionada.tarifa) {
+                        <div class="form-control bg-light" aria-readonly="true">
+                          {{ estacionSeleccionada.tarifa.nombre }}
+                          <span class="text-success fw-semibold"> - {{ estacionSeleccionada.tarifa.precio_kwh }} €/kWh</span>
+                        </div>
+                      } @else {
+                        <div class="form-control bg-light text-muted" aria-readonly="true">Sin tarifa</div>
+                      }
+                      <small class="text-muted">Este precio no se puede modificar en la reserva.</small>
                     </div>
                   </div>
 
@@ -219,3 +222,4 @@
     </div>
   </main>
 </div>
+

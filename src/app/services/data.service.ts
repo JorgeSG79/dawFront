@@ -45,12 +45,28 @@ export class DataService {
     codigo_postal?: string;
     latitud: number | string;
     longitud: number | string;
+    tarifa_id: number;
   }): Observable<Estacion> {
     const headers = this.getAuthHeaders();
     return this.http.post<Estacion>(`${this.apiUrl}/estaciones`, estacion, { headers });
   }
 
-  // 6. Crear una reserva de carga
+  // 6. Editar una estación existente (solo admin)
+  actualizarEstacion(id: number, estacion: {
+    nombre: string;
+    direccion: string;
+    ciudad?: string;
+    provincia?: string;
+    codigo_postal?: string;
+    latitud: number | string;
+    longitud: number | string;
+    tarifa_id: number;
+  }): Observable<Estacion> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<Estacion>(`${this.apiUrl}/estaciones/${id}`, estacion, { headers });
+  }
+
+  // 7. Crear una reserva de carga
   crearReserva(reserva: {
     vehiculo_id: number;
     punto_id: number;

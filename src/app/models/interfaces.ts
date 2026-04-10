@@ -16,6 +16,13 @@ export interface Punto {
   id: number;
   nombre: string;
   activo: number;
+  estado_actual?: string;
+}
+
+export interface Tarifa {
+  id: number;
+  nombre: string;
+  precio_kwh: string | number;
 }
 
 export interface Estacion {
@@ -27,6 +34,7 @@ export interface Estacion {
   codigo_postal?: string;
   latitud: number | string;
   longitud: number | string;
+  tarifa?: Tarifa;
   puntos: Punto[];
   // Propiedades derivadas para compatibilidad
   num_puntos?: number;
