@@ -159,6 +159,12 @@ export class NewStation implements OnInit {
     this.stationData.tarifa_id = Number(target.value);
   }
 
+  private releaseSubmitting() {
+    setTimeout(() => {
+      this.submitting = false;
+    }, 150);
+  }
+
   submit() {
     this.error = '';
     this.success = false;
@@ -200,8 +206,9 @@ export class NewStation implements OnInit {
       if (settled) {
         return;
       }
+
       settled = true;
-      this.submitting = false;
+      this.releaseSubmitting();
       this.error = this.isEditMode
         ? 'La actualización tardó demasiado. Revisa conexión o backend.'
         : 'La creación tardó demasiado. Revisa conexión o backend.';
@@ -212,10 +219,11 @@ export class NewStation implements OnInit {
         if (settled) {
           return;
         }
+
         settled = true;
         clearTimeout(timeoutId);
+        this.releaseSubmitting();
         this.success = true;
-        this.submitting = false;
 
         if (this.isEditMode) {
           return;
@@ -231,9 +239,10 @@ export class NewStation implements OnInit {
         if (settled) {
           return;
         }
+
         settled = true;
         clearTimeout(timeoutId);
-        this.submitting = false;
+        this.releaseSubmitting();
         this.error = this.isEditMode
           ? 'Error al actualizar la estación. Inténtalo de nuevo.'
           : 'Error al crear la estación. Inténtalo de nuevo.';

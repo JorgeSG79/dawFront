@@ -108,7 +108,7 @@
               }
 
               @if (showPasswordForm) {
-                <form class="vehicle-form mt-4" (ngSubmit)="submitPasswordChange()">
+                <form class="border-top pt-3 mt-4" (ngSubmit)="submitPasswordChange()">
                   <h5 class="mb-3">Cambiar contraseña</h5>
 
                   <div class="row g-3">
@@ -164,7 +164,7 @@
               }
 
               @if (showVehicleForm) {
-                <form class="vehicle-form mt-4" (ngSubmit)="submitVehicle()">
+                <form class="border-top pt-3 mt-4" (ngSubmit)="submitVehicle()">
                   <h5 class="mb-3">{{ editingVehicleId ? 'Editar vehiculo' : 'Nuevo vehiculo' }}</h5>
 
                   @if (isLoadingVehicle) {
