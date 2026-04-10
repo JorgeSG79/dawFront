@@ -13,7 +13,9 @@ export class DataService {
   constructor(private http: HttpClient) { }
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token') ?? '';
+    const token = typeof window !== 'undefined'
+      ? window.localStorage.getItem('token') ?? ''
+      : '';
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
@@ -27,6 +29,28 @@ export class DataService {
   getMisVehiculos(): Observable<Vehiculo[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<Vehiculo[]>(`${this.apiUrl}/vehiculos`, { headers });
+  }
+
+  crearVehiculo(vehiculo: {
+    marca: string;
+    modelo: string;
+    matricula: string;
+    capacidad_bateria?: number | null;
+    tipo_conector?: string;
+  }): Observable<Vehiculo> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<Vehiculo>(`${this.apiUrl}/vehiculos`, vehiculo, { headers });
+  }
+
+  actualizarVehiculo(id: number, vehiculo: {
+    marca: string;
+    modelo: string;
+    matricula: string;
+    capacidad_bateria?: number | null;
+    tipo_conector?: string;
+  }): Observable<Vehiculo> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<Vehiculo>(`${this.apiUrl}/vehiculos/${id}`, vehiculo, { headers });
   }
 
   // 3. Obtener recargas (user: solo las suyas, admin: todas)
@@ -59,6 +83,11 @@ export class DataService {
   actualizarTarifa(id: number, tarifa: { nombre: string; precio_kwh: number | string }): Observable<Tarifa> {
     const headers = this.getAuthHeaders();
     return this.http.put<Tarifa>(`${this.apiUrl}/tarifas/${id}`, tarifa, { headers });
+  }
+
+  eliminarTarifa(id: number): Observable<void> {
+    const headers = this.getAuthHeaders();
+    return this.http.delete<void>(`${this.apiUrl}/tarifas/${id}`, { headers });
   }
 
   // 5. Crear una nueva estación (solo admin)

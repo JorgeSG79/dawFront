@@ -43,9 +43,24 @@
                         <td>{{ t.nombre }}</td>
                         <td>{{ t.precio_kwh }}</td>
                         <td class="text-end">
-                          <button type="button" class="btn btn-sm btn-outline-primary" (click)="editTarifa(t)">
-                            <i class="fa-solid fa-pen-to-square me-1"></i> Editar
-                          </button>
+                          <div class="d-inline-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" (click)="editTarifa(t)">
+                              <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-outline-danger"
+                              [disabled]="deletingId === t.id"
+                              (click)="deleteTarifa(t)"
+                              title="Eliminar tarifa"
+                            >
+                              @if (deletingId === t.id) {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                              } @else {
+                                <i class="fa-solid fa-trash"></i>
+                              }
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     }

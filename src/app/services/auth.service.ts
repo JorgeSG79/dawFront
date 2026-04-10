@@ -8,6 +8,30 @@ export class AuthService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:3000/api/auth'; // Ajusta según tu ruta de Node
 
+  private canUseStorage(): boolean {
+    return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+  }
+
+  private setStorageItem(key: string, value: string): void {
+    if (this.canUseStorage()) {
+      window.localStorage.setItem(key, value);
+    }
+  }
+
+  private getStorageItem(key: string): string | null {
+    if (!this.canUseStorage()) {
+      return null;
+    }
+
+    return window.localStorage.getItem(key);
+  }
+
+  private removeStorageItem(key: string): void {
+    if (this.canUseStorage()) {
+      window.localStorage.removeItem(key);
+    }
+  }
+
   private normalizeRole(rawRole: unknown): 'admin' | 'cliente' {
     if (typeof rawRole === 'string') {
       const normalized = rawRole
@@ -41,7 +65,7 @@ export class AuthService {
       tap(response => {
         // Guardamos el token y los datos básicos del usuario
         if (response.token) {
-          localStorage.setItem('token', response.token);
+          this.setStorageItem('token', response.token);
 
           const user = this.getUserFromResponse(response);
           if (user) {
@@ -49,7 +73,7 @@ export class AuthService {
               ...user,
               rol: this.normalizeRole(user?.rol ?? user?.role),
             };
-            localStorage.setItem('user', JSON.stringify(normalizedUser));
+            this.setStorageItem('user', JSON.stringify(normalizedUser));
           }
         }
       })
@@ -57,16 +81,16 @@ export class AuthService {
   }
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    this.removeStorageItem('token');
+    this.removeStorageItem('user');
   }
 
   getToken() {
-    return localStorage.getItem('token');
+    return this.getStorageItem('token');
   }
 
   getCurrentUser(): any | null {
-    const rawUser = localStorage.getItem('user');
+    const rawUser = this.getStorageItem('user');
     if (!rawUser) {
       return null;
     }
@@ -96,7 +120,7 @@ export class AuthService {
             ...response.user,
             rol: this.normalizeRole(response.user?.rol ?? response.user?.role),
           };
-          localStorage.setItem('user', JSON.stringify(normalizedUser));
+          this.setStorageItem('user', JSON.stringify(normalizedUser));
         }
       })
     );

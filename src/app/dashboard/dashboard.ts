@@ -141,9 +141,15 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     if (this.isCliente) {
-      this.dataService.getMisVehiculos().subscribe(coches => {
-        this.misCoches = coches;
-        this.cdr.markForCheck();
+      this.dataService.getMisVehiculos().subscribe({
+        next: (coches) => {
+          this.misCoches = coches;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.misCoches = [];
+          this.cdr.markForCheck();
+        }
       });
     }
   }

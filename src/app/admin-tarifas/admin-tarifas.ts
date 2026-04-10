@@ -24,6 +24,7 @@ export class AdminTarifas implements OnInit {
   tarifas: Tarifa[] = [];
   loading = true;
   submitting = false;
+  deletingId: number | null = null;
   error = '';
   success = '';
   editingId: number | null = null;
@@ -119,6 +120,39 @@ export class AdminTarifas implements OnInit {
         },
         error: (err) => {
           this.error = err?.error?.message || 'No se pudo guardar la tarifa.';
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  deleteTarifa(tarifa: Tarifa) {
+    const confirmed = window.confirm(`¿Eliminar la tarifa "${tarifa.nombre}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.error = '';
+    this.success = '';
+    this.deletingId = tarifa.id;
+    this.cdr.markForCheck();
+
+    this.dataService.eliminarTarifa(tarifa.id)
+      .pipe(
+        finalize(() => {
+          this.deletingId = null;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: () => {
+          if (this.editingId === tarifa.id) {
+            this.cancelEdit();
+          }
+          this.success = 'Tarifa eliminada correctamente.';
+          this.loadTarifas();
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'No se pudo eliminar la tarifa.';
           this.cdr.markForCheck();
         }
       });
