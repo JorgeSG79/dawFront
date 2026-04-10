@@ -73,8 +73,23 @@ export class Profile implements OnInit {
 
   private loadVehicleData() {
     this.isLoadingVehicle = true;
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      this.isLoadingVehicle = false;
+      this.vehicleError = 'La carga del vehiculo tardó demasiado. Revisa conexión o backend.';
+    }, 15000);
+
     this.dataService.getMisVehiculos().subscribe({
       next: (vehicles) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
         const currentVehicle = Array.isArray(vehicles) ? vehicles[0] : null;
         if (currentVehicle) {
           this.editingVehicleId = currentVehicle.id;
@@ -85,7 +100,13 @@ export class Profile implements OnInit {
         this.isLoadingVehicle = false;
       },
       error: () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
         this.isLoadingVehicle = false;
+        this.vehicleError = 'No se pudieron cargar los datos del vehiculo.';
       }
     });
   }
@@ -176,14 +197,34 @@ export class Profile implements OnInit {
       ? this.dataService.actualizarVehiculo(this.editingVehicleId, payload)
       : this.dataService.crearVehiculo(payload);
 
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      this.isLoadingVehicle = false;
+      this.vehicleError = 'La operación del vehiculo tardó demasiado. Revisa conexión o backend.';
+    }, 15000);
+
     request$.subscribe({
       next: (vehiculo) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
         this.vehicleCreated = true;
-        this.isLoadingVehicle = false;
         this.editingVehicleId = vehiculo?.id ?? this.editingVehicleId;
         this.vehicleData = this.mapVehicleToForm(vehiculo as VehiculoApi);
+        this.isLoadingVehicle = false;
       },
       error: (err) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
         this.isLoadingVehicle = false;
         this.vehicleError = err?.error?.message || 'No se pudo guardar el vehiculo.';
       }
@@ -229,8 +270,23 @@ export class Profile implements OnInit {
     }
 
     this.isLoadingPassword = true;
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      this.isLoadingPassword = false;
+      this.passwordError = 'El cambio de contraseña tardó demasiado. Revisa conexión o backend.';
+    }, 15000);
+
     this.authService.changePassword(this.passwordData.actual, this.passwordData.nueva).subscribe({
       next: () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
         this.isLoadingPassword = false;
         this.passwordSaved = true;
         this.passwordData = {
@@ -241,6 +297,11 @@ export class Profile implements OnInit {
         this.showPasswordForm = false;
       },
       error: (err) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
         this.isLoadingPassword = false;
         this.passwordError = err.error?.message || 'Error al cambiar la contraseña. Verifica tu contraseña actual.';
       }
@@ -290,8 +351,23 @@ export class Profile implements OnInit {
       email: this.editableProfile.email.trim(),
     };
 
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      this.isLoadingProfile = false;
+      this.profileError = 'La actualización del perfil tardó demasiado. Revisa conexión o backend.';
+    }, 15000);
+
     this.authService.updateProfile(updatePayload).subscribe({
       next: (res) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
         this.isLoadingProfile = false;
         this.user = {
           ...this.user,
@@ -303,6 +379,11 @@ export class Profile implements OnInit {
         this.profileSaved = true;
       },
       error: (err) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
         this.isLoadingProfile = false;
         this.profileError = err.error?.message || 'Error al guardar el perfil. Inténtalo de nuevo.';
       }

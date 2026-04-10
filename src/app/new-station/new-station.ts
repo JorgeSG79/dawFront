@@ -2,7 +2,6 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { finalize, timeout } from 'rxjs';
 import { DataService } from '../services/data.service';
 import { AuthService } from '../services/auth.service';
 import { Estacion, Punto } from '../models/interfaces';
@@ -73,15 +72,25 @@ export class NewStation implements OnInit {
     this.loadingStation = true;
     this.error = '';
 
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      this.loadingStation = false;
+      this.error = 'No se pudo cargar la estación para edición (timeout).';
+    }, 8000);
+
     this.dataService.getEstaciones()
-      .pipe(
-        timeout(8000),
-        finalize(() => {
-          this.loadingStation = false;
-        })
-      )
       .subscribe({
       next: (estaciones) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
+        this.loadingStation = false;
         const station = estaciones.find((item) => Number(item.id) === stationId);
         if (!station) {
           this.error = 'No se encontró la estación a editar.';
@@ -91,6 +100,12 @@ export class NewStation implements OnInit {
         this.stationData = this.mapStationToForm(station);
       },
       error: () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
+        this.loadingStation = false;
         this.error = 'No se pudo cargar la estación para edición.';
       }
     });
@@ -180,8 +195,25 @@ export class NewStation implements OnInit {
       ? this.dataService.actualizarEstacion(this.editStationId, payload)
       : this.dataService.crearEstacion(payload);
 
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      this.submitting = false;
+      this.error = this.isEditMode
+        ? 'La actualización tardó demasiado. Revisa conexión o backend.'
+        : 'La creación tardó demasiado. Revisa conexión o backend.';
+    }, 15000);
+
     request$.subscribe({
       next: () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
         this.success = true;
         this.submitting = false;
 
@@ -196,10 +228,15 @@ export class NewStation implements OnInit {
         };
       },
       error: () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
+        this.submitting = false;
         this.error = this.isEditMode
           ? 'Error al actualizar la estación. Inténtalo de nuevo.'
           : 'Error al crear la estación. Inténtalo de nuevo.';
-        this.submitting = false;
       }
     });
   }
