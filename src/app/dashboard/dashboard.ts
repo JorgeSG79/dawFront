@@ -173,7 +173,9 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
   }
 
   editarEstacion(estacion: Estacion) {
-    this.router.navigate(['/new-station', estacion.id]);
+    this.router.navigate(['/new-station', estacion.id], {
+      state: { station: estacion }
+    });
   }
 
   cerrarModalReserva() {

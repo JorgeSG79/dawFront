@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { finalize, timeout } from 'rxjs';
 import { DataService } from '../services/data.service';
 import { AuthService } from '../services/auth.service';
 import { Estacion, Punto } from '../models/interfaces';
@@ -56,6 +57,14 @@ export class NewStation implements OnInit {
     if (Number.isFinite(parsedId) && parsedId > 0) {
       this.isEditMode = true;
       this.editStationId = parsedId;
+
+      const stationFromState = (typeof window !== 'undefined'
+        ? window.history.state?.station
+        : undefined) as Estacion | undefined;
+      if (stationFromState && Number(stationFromState.id) === parsedId) {
+        this.stationData = this.mapStationToForm(stationFromState);
+      }
+
       this.cargarEstacionParaEdicion(parsedId);
     }
   }
@@ -64,21 +73,25 @@ export class NewStation implements OnInit {
     this.loadingStation = true;
     this.error = '';
 
-    this.dataService.getEstaciones().subscribe({
+    this.dataService.getEstaciones()
+      .pipe(
+        timeout(8000),
+        finalize(() => {
+          this.loadingStation = false;
+        })
+      )
+      .subscribe({
       next: (estaciones) => {
-        const station = estaciones.find((item) => item.id === stationId);
+        const station = estaciones.find((item) => Number(item.id) === stationId);
         if (!station) {
           this.error = 'No se encontró la estación a editar.';
-          this.loadingStation = false;
           return;
         }
 
         this.stationData = this.mapStationToForm(station);
-        this.loadingStation = false;
       },
       error: () => {
         this.error = 'No se pudo cargar la estación para edición.';
-        this.loadingStation = false;
       }
     });
   }
