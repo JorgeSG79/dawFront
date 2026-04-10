@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, AfterViewInit, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, inject, AfterViewInit, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, NgZone, ElementRef, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { DataService } from '../services/data.service';
@@ -14,14 +14,17 @@ import { Estacion, Punto } from '../models/interfaces';
   styleUrl: './dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Dashboard implements AfterViewInit, OnInit {
+export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
   private router = inject(Router);
   private dataService = inject(DataService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
   private fb = inject(FormBuilder);
   private ngZone = inject(NgZone);
+  @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
+  private resizeListener?: () => void;
   map: any; // Guarda la referencia aquí
+  adminMapHeightPx: number | null = null;
   misCoches: any[] = [];
   estacionesCount = 0;
   selectedVehicleIndex = 0;
@@ -65,6 +68,32 @@ export class Dashboard implements AfterViewInit, OnInit {
     return punto.activo === 1;
   }
 
+  private ajustarAlturaMapaAdmin() {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (!this.isAdmin) {
+      this.adminMapHeightPx = null;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const mapElement = this.mapContainer?.nativeElement;
+    if (!mapElement) {
+      return;
+    }
+
+    const margenInferior = 16;
+    const alturaDisponible = Math.floor(window.innerHeight - mapElement.getBoundingClientRect().top - margenInferior);
+    this.adminMapHeightPx = Math.max(380, alturaDisponible);
+    this.cdr.markForCheck();
+
+    if (this.map) {
+      setTimeout(() => this.map.invalidateSize(), 0);
+    }
+  }
+
   ngOnInit() {
     const user = this.authService.getCurrentUser();
     this.userRole = user?.rol ?? 'cliente';
@@ -95,6 +124,12 @@ export class Dashboard implements AfterViewInit, OnInit {
       tarifa_id: estacion.tarifa?.id ?? null,
     });
     this.cdr.markForCheck();
+  }
+
+  editarEstacion(estacion: Estacion) {
+    this.router.navigate(['/new-station'], {
+      queryParams: { stationId: estacion.id }
+    });
   }
 
   cerrarModalReserva() {
@@ -140,7 +175,7 @@ export class Dashboard implements AfterViewInit, OnInit {
       const L = await import('leaflet');
 
       // Inicializamos el mapa
-      this.map = L.map('map').setView([40.4168, -3.7038], 13);
+      this.map = L.map('map').setView([40.4168, -3.7038], 9);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
@@ -191,21 +226,36 @@ export class Dashboard implements AfterViewInit, OnInit {
                 <div style="max-height: 200px; overflow-y: auto;">
                   ${puntosHtml}
                 </div>
-                <button id="btn-reserva-${est.id}" class="btn btn-sm btn-primary w-100 mt-2">
-                  <i class="fa-solid fa-calendar-check"></i> Hacer reserva
-                </button>
+                ${this.isAdmin
+                  ? `<button id="btn-edit-station-${est.id}" class="btn btn-sm btn-warning w-100 mt-2">
+                      <i class="fa-solid fa-pen-to-square"></i> Editar estación
+                    </button>`
+                  : `<button id="btn-reserva-${est.id}" class="btn btn-sm btn-primary w-100 mt-2">
+                      <i class="fa-solid fa-calendar-check"></i> Hacer reserva
+                    </button>`}
               </div>
             `);
 
-            // Agregar listener al botón de reserva
+            // Agregar listener al botón de acción según el rol
             marker.on('popupopen', () => {
-              const btn = document.getElementById(`btn-reserva-${est.id}`);
-              if (btn) {
-                btn.addEventListener('click', () => {
-                  this.ngZone.run(() => {
-                    this.abrirModalReserva(est);
+              if (this.isAdmin) {
+                const btnEdit = document.getElementById(`btn-edit-station-${est.id}`);
+                if (btnEdit) {
+                  btnEdit.addEventListener('click', () => {
+                    this.ngZone.run(() => {
+                      this.editarEstacion(est);
+                    });
                   });
-                });
+                }
+              } else {
+                const btnReserva = document.getElementById(`btn-reserva-${est.id}`);
+                if (btnReserva) {
+                  btnReserva.addEventListener('click', () => {
+                    this.ngZone.run(() => {
+                      this.abrirModalReserva(est);
+                    });
+                  });
+                }
               }
             });
           });
@@ -218,7 +268,18 @@ export class Dashboard implements AfterViewInit, OnInit {
       // El timeout es perfecto para asegurar que el CSS de Flexbox se aplicó
       setTimeout(() => {
         this.map.invalidateSize();
+        this.ajustarAlturaMapaAdmin();
       }, 200);
+
+      this.resizeListener = () => this.ajustarAlturaMapaAdmin();
+      window.addEventListener('resize', this.resizeListener, { passive: true });
+    }
+  }
+
+  ngOnDestroy() {
+    if (typeof window !== 'undefined' && this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+      this.resizeListener = undefined;
     }
   }
 

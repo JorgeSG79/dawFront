@@ -46,6 +46,9 @@ export class DataService {
     latitud: number | string;
     longitud: number | string;
     tarifa_id: number;
+    num_puntos?: number | null;
+    conectores_disponibles?: string;
+    activo?: number;
   }): Observable<Estacion> {
     const headers = this.getAuthHeaders();
     return this.http.post<Estacion>(`${this.apiUrl}/estaciones`, estacion, { headers });
@@ -61,6 +64,9 @@ export class DataService {
     latitud: number | string;
     longitud: number | string;
     tarifa_id: number;
+    num_puntos?: number | null;
+    conectores_disponibles?: string;
+    activo?: number;
   }): Observable<Estacion> {
     const headers = this.getAuthHeaders();
     return this.http.put<Estacion>(`${this.apiUrl}/estaciones/${id}`, estacion, { headers });

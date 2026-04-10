@@ -1,9 +1,10 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { AuthService } from '../services/auth.service';
+import { Estacion, Punto } from '../models/interfaces';
 
 @Component({
   selector: 'app-new-station',
@@ -16,10 +17,13 @@ export class NewStation implements OnInit {
   private dataService = inject(DataService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   loading = false;
   success = false;
   error = '';
+  isEditMode = false;
+  editStationId: number | null = null;
   readonly tarifasDisponibles = [
     { id: 1, nombre: 'Tarifa 1 - Económica' },
     { id: 2, nombre: 'Tarifa 2 - Estándar' },
@@ -43,7 +47,67 @@ export class NewStation implements OnInit {
   ngOnInit() {
     if (!this.authService.isAdmin()) {
       this.router.navigate(['/dashboard']);
+      return;
     }
+
+    const stationIdParam = this.route.snapshot.queryParamMap.get('stationId');
+    const parsedId = stationIdParam ? Number(stationIdParam) : Number.NaN;
+    if (Number.isFinite(parsedId) && parsedId > 0) {
+      this.isEditMode = true;
+      this.editStationId = parsedId;
+      this.cargarEstacionParaEdicion(parsedId);
+    }
+  }
+
+  private cargarEstacionParaEdicion(stationId: number) {
+    this.loading = true;
+    this.error = '';
+
+    this.dataService.getEstaciones().subscribe({
+      next: (estaciones) => {
+        const station = estaciones.find((item) => item.id === stationId);
+        if (!station) {
+          this.error = 'No se encontró la estación a editar.';
+          this.loading = false;
+          return;
+        }
+
+        this.stationData = this.mapStationToForm(station);
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'No se pudo cargar la estación para edición.';
+        this.loading = false;
+      }
+    });
+  }
+
+  private mapStationToForm(station: Estacion) {
+    const conectores = this.extraerConectores(station.puntos ?? []);
+    return {
+      nombre: station.nombre ?? '',
+      direccion: station.direccion ?? '',
+      ciudad: station.ciudad ?? '',
+      provincia: station.provincia ?? '',
+      codigo_postal: station.codigo_postal ?? '',
+      latitud: String(station.latitud ?? ''),
+      longitud: String(station.longitud ?? ''),
+      num_puntos: station.puntos?.length ?? station.num_puntos ?? null,
+      conectores_disponibles: conectores,
+      activo: 1,
+      tarifa_id: Number(station.tarifa?.id ?? 1),
+    };
+  }
+
+  private extraerConectores(puntos: Punto[]): string {
+    const setConectores = new Set<string>();
+    puntos.forEach((punto) => {
+      const nombre = (punto.nombre ?? '').trim();
+      if (nombre) {
+        setConectores.add(nombre);
+      }
+    });
+    return Array.from(setConectores).join(', ');
   }
 
   updateField(field: keyof typeof this.stationData, event: Event) {
@@ -84,7 +148,7 @@ export class NewStation implements OnInit {
     }
 
     this.loading = true;
-    this.dataService.crearEstacion({
+    const payload = {
       nombre: this.stationData.nombre,
       direccion: this.stationData.direccion,
       ciudad: this.stationData.ciudad,
@@ -93,10 +157,24 @@ export class NewStation implements OnInit {
       latitud: this.stationData.latitud,
       longitud: this.stationData.longitud,
       tarifa_id: this.stationData.tarifa_id,
-    }).subscribe({
+      num_puntos: this.stationData.num_puntos,
+      conectores_disponibles: this.stationData.conectores_disponibles,
+      activo: this.stationData.activo,
+    };
+
+    const request$ = this.isEditMode && this.editStationId
+      ? this.dataService.actualizarEstacion(this.editStationId, payload)
+      : this.dataService.crearEstacion(payload);
+
+    request$.subscribe({
       next: () => {
         this.success = true;
         this.loading = false;
+
+        if (this.isEditMode) {
+          return;
+        }
+
         this.stationData = {
           nombre: '', direccion: '', ciudad: '', provincia: '',
           codigo_postal: '', latitud: '', longitud: '',
@@ -104,7 +182,9 @@ export class NewStation implements OnInit {
         };
       },
       error: () => {
-        this.error = 'Error al crear la estación. Inténtalo de nuevo.';
+        this.error = this.isEditMode
+          ? 'Error al actualizar la estación. Inténtalo de nuevo.'
+          : 'Error al crear la estación. Inténtalo de nuevo.';
         this.loading = false;
       }
     });
