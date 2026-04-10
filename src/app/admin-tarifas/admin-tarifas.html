@@ -1,0 +1,116 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Gestion de tarifas</h4>
+    <a routerLink="/dashboard" class="btn btn-sm btn-outline-primary">
+      <i class="fa-solid fa-arrow-left me-1"></i> Volver al Dashboard
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-7">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-primary-subtle">
+          <h6 class="mb-0">Listado de tarifas</h6>
+        </div>
+
+        @if (loading) {
+          <div class="d-flex justify-content-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+        }
+
+        @if (!loading) {
+          <div class="card-body p-0">
+            @if (tarifas.length === 0) {
+              <div class="p-3 text-muted">No hay tarifas registradas.</div>
+            } @else {
+              <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>ID</th>
+                      <th>Nombre</th>
+                      <th>Precio (EUR/kWh)</th>
+                      <th class="text-end">Accion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (t of tarifas; track t.id) {
+                      <tr>
+                        <td>{{ t.id }}</td>
+                        <td>{{ t.nombre }}</td>
+                        <td>{{ t.precio_kwh }}</td>
+                        <td class="text-end">
+                          <button type="button" class="btn btn-sm btn-outline-primary" (click)="editTarifa(t)">
+                            <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+      <div class="card shadow-sm border-0">
+        <div class="card-header" [class.bg-warning-subtle]="editingId" [class.bg-success-subtle]="!editingId">
+          <h6 class="mb-0">{{ editingId ? 'Editar tarifa' : 'Nueva tarifa' }}</h6>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="submitTarifa()">
+            <div class="mb-3">
+              <label class="form-label">Nombre</label>
+              <input
+                type="text"
+                class="form-control"
+                [value]="form.nombre"
+                (input)="form.nombre = $any($event.target).value"
+                placeholder="Ej: Tarifa nocturna"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Precio por kWh (EUR)</label>
+              <input
+                type="number"
+                class="form-control"
+                step="0.001"
+                min="0"
+                [value]="form.precio_kwh"
+                (input)="form.precio_kwh = $any($event.target).value"
+                placeholder="Ej: 0.180"
+              />
+            </div>
+
+            @if (error) {
+              <div class="alert alert-danger py-2">{{ error }}</div>
+            }
+
+            @if (success) {
+              <div class="alert alert-success py-2">{{ success }}</div>
+            }
+
+            <div class="d-flex justify-content-end gap-2">
+              @if (editingId) {
+                <button type="button" class="btn btn-outline-secondary" (click)="cancelEdit()">Cancelar</button>
+              }
+              <button type="submit" class="btn btn-primary" [disabled]="submitting">
+                @if (submitting) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                }
+                {{ editingId ? 'Actualizar tarifa' : 'Crear tarifa' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

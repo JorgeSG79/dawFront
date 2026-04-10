@@ -56,6 +56,45 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
     return this.misCoches[this.selectedVehicleIndex] ?? null;
   }
 
+  private resolveIsAdmin(user: any): boolean {
+    const candidates = [
+      user?.rol,
+      user?.role,
+      user?.perfil,
+      user?.tipo,
+      user?.tipo_usuario,
+      user?.rol_nombre,
+    ];
+
+    for (const value of candidates) {
+      if (typeof value === 'string') {
+        const normalized = value
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .trim();
+
+        if (normalized === 'admin' || normalized === 'administrador') {
+          return true;
+        }
+      }
+
+      if (typeof value === 'number' && value === 1) {
+        return true;
+      }
+    }
+
+    if (user?.is_admin === true || user?.admin === true) {
+      return true;
+    }
+
+    if (user?.is_admin === 1 || user?.admin === 1) {
+      return true;
+    }
+
+    return false;
+  }
+
   private getEstadoPunto(punto: Punto): string {
     return (punto.estado_actual ?? '').trim().toLowerCase();
   }
@@ -96,7 +135,8 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
 
   ngOnInit() {
     const user = this.authService.getCurrentUser();
-    this.userRole = user?.rol ?? 'cliente';
+    const isAdminUser = this.resolveIsAdmin(user) || this.authService.isAdmin();
+    this.userRole = isAdminUser ? 'admin' : 'cliente';
     this.userName = user?.nombre ?? user?.name ?? 'Usuario';
     this.cdr.markForCheck();
 
@@ -127,9 +167,7 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
   }
 
   editarEstacion(estacion: Estacion) {
-    this.router.navigate(['/new-station'], {
-      queryParams: { stationId: estacion.id }
-    });
+    this.router.navigate(['/new-station', estacion.id]);
   }
 
   cerrarModalReserva() {

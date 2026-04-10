@@ -1,8 +1,8 @@
 // src/app/services/data.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Estacion, Vehiculo, Recarga } from '../models/interfaces';
+import { Observable, catchError } from 'rxjs';
+import { Estacion, Vehiculo, Recarga, Tarifa, Usuario } from '../models/interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -34,6 +34,31 @@ export class DataService {
   getRecargas(): Observable<Recarga[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<Recarga[]>(`${this.apiUrl}/reservas`, { headers });
+  }
+
+  // 4. Listado de usuarios (solo admin)
+  // Intentamos /usuarios y si no existe, fallback a /users.
+  getUsuarios(): Observable<Usuario[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`, { headers }).pipe(
+      catchError(() => this.http.get<Usuario[]>(`${this.apiUrl}/users`, { headers }))
+    );
+  }
+
+  // 4b. Gestion de tarifas (solo admin)
+  getTarifas(): Observable<Tarifa[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Tarifa[]>(`${this.apiUrl}/tarifas`, { headers });
+  }
+
+  crearTarifa(tarifa: { nombre: string; precio_kwh: number | string }): Observable<Tarifa> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<Tarifa>(`${this.apiUrl}/tarifas`, tarifa, { headers });
+  }
+
+  actualizarTarifa(id: number, tarifa: { nombre: string; precio_kwh: number | string }): Observable<Tarifa> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<Tarifa>(`${this.apiUrl}/tarifas/${id}`, tarifa, { headers });
   }
 
   // 5. Crear una nueva estación (solo admin)

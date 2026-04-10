@@ -19,7 +19,8 @@ export class NewStation implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  loading = false;
+  loadingStation = false;
+  submitting = false;
   success = false;
   error = '';
   isEditMode = false;
@@ -50,7 +51,7 @@ export class NewStation implements OnInit {
       return;
     }
 
-    const stationIdParam = this.route.snapshot.queryParamMap.get('stationId');
+    const stationIdParam = this.route.snapshot.paramMap.get('id') ?? this.route.snapshot.queryParamMap.get('stationId');
     const parsedId = stationIdParam ? Number(stationIdParam) : Number.NaN;
     if (Number.isFinite(parsedId) && parsedId > 0) {
       this.isEditMode = true;
@@ -60,7 +61,7 @@ export class NewStation implements OnInit {
   }
 
   private cargarEstacionParaEdicion(stationId: number) {
-    this.loading = true;
+    this.loadingStation = true;
     this.error = '';
 
     this.dataService.getEstaciones().subscribe({
@@ -68,16 +69,16 @@ export class NewStation implements OnInit {
         const station = estaciones.find((item) => item.id === stationId);
         if (!station) {
           this.error = 'No se encontró la estación a editar.';
-          this.loading = false;
+          this.loadingStation = false;
           return;
         }
 
         this.stationData = this.mapStationToForm(station);
-        this.loading = false;
+        this.loadingStation = false;
       },
       error: () => {
         this.error = 'No se pudo cargar la estación para edición.';
-        this.loading = false;
+        this.loadingStation = false;
       }
     });
   }
@@ -147,7 +148,7 @@ export class NewStation implements OnInit {
       return;
     }
 
-    this.loading = true;
+    this.submitting = true;
     const payload = {
       nombre: this.stationData.nombre,
       direccion: this.stationData.direccion,
@@ -169,7 +170,7 @@ export class NewStation implements OnInit {
     request$.subscribe({
       next: () => {
         this.success = true;
-        this.loading = false;
+        this.submitting = false;
 
         if (this.isEditMode) {
           return;
@@ -185,7 +186,7 @@ export class NewStation implements OnInit {
         this.error = this.isEditMode
           ? 'Error al actualizar la estación. Inténtalo de nuevo.'
           : 'Error al crear la estación. Inténtalo de nuevo.';
-        this.loading = false;
+        this.submitting = false;
       }
     });
   }
