@@ -3,6 +3,13 @@ export interface Usuario {
   id: number;
   nombre: string;
   rol: string;
+  email?: string;
+  correo?: string;
+  telefono?: string;
+  activo?: number | boolean;
+  estado?: string;
+  created_at?: string;
+  fecha_creacion?: string;
 }
 
 export interface Vehiculo {

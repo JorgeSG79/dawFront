@@ -61,12 +61,14 @@ export class DataService {
   }
 
   // 4. Listado de usuarios (solo admin)
-  // Intentamos /usuarios y si no existe, fallback a /users.
   getUsuarios(): Observable<Usuario[]> {
     const headers = this.getAuthHeaders();
-    return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`, { headers }).pipe(
-      catchError(() => this.http.get<Usuario[]>(`${this.apiUrl}/users`, { headers }))
-    );
+    return this.http.get<Usuario[]>(`${this.apiUrl}/auth/usuarios`, { headers });
+  }
+
+  eliminarUsuario(id: number): Observable<void> {
+    const headers = this.getAuthHeaders();
+    return this.http.delete<void>(`${this.apiUrl}/auth/usuarios/${id}`, { headers });
   }
 
   // 4b. Gestion de tarifas (solo admin)

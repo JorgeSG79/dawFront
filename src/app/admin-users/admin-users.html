@@ -30,7 +30,12 @@
                 <tr>
                   <th>ID</th>
                   <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Telefono</th>
                   <th>Rol</th>
+                  <th>Estado</th>
+                  <th>Alta</th>
+                  <th class="text-end">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -38,10 +43,32 @@
                   <tr>
                     <td>{{ u.id }}</td>
                     <td>{{ u.nombre }}</td>
+                    <td>{{ getUserEmail(u) }}</td>
+                    <td>{{ getUserTelefono(u) }}</td>
                     <td>
                       <span class="badge rounded-pill" [class.text-bg-warning]="u.rol === 'admin'" [class.text-bg-primary]="u.rol !== 'admin'">
                         {{ u.rol | titlecase }}
                       </span>
+                    </td>
+                    <td>{{ getUserEstado(u) }}</td>
+                    <td>{{ getUserFechaAlta(u) }}</td>
+                    <td class="text-end">
+                      @if (u.rol !== 'admin') {
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger"
+                          [disabled]="deletingUserId === u.id"
+                          (click)="eliminarUsuario(u)"
+                        >
+                          @if (deletingUserId !== u.id) {
+                            <span>Eliminar</span>
+                          } @else {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          }
+                        </button>
+                      } @else {
+                        <span class="text-muted small">Protegido</span>
+                      }
                     </td>
                   </tr>
                 }
