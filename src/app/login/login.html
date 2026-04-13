@@ -22,12 +22,14 @@
 			<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
 		}
 	</button>
+	<!--
 	<button type="button" class="btn btn-outline-secondary w-100 mt-2" (click)="skipLogin()" [disabled]="loading()">
 		Saltar login (cliente)
 	</button>
 	<button type="button" class="btn btn-outline-warning w-100 mt-2" (click)="skipLoginAsAdmin()" [disabled]="loading()">
 		Saltar login (admin)
 	</button>
+	-->
 	@if (error()) {
 		<div class="alert alert-danger mt-3">{{ error() }}</div>
 	}

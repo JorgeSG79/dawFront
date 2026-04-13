@@ -54,6 +54,9 @@ export interface Recarga {
   punto_id: number;
   vehiculo_id: number;
   tarifa_id: number | null;
+  tarifa_nombre?: string;
+  tarifa_precio?: number | string;
+  precio_kwh?: number | string;
   fecha_reserva: string;
   nombre_punto: string;
   matricula: string;

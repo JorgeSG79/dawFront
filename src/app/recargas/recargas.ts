@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 import { DataService } from '../services/data.service';
 import { AuthService } from '../services/auth.service';
-import { Recarga, Tarifa } from '../models/interfaces';
+import { Estacion, Recarga, Tarifa } from '../models/interfaces';
 
 @Component({
   selector: 'app-recargas',
@@ -33,6 +33,14 @@ export class Recargas implements OnInit {
   }
 
   getTarifaPrecio(recarga: Recarga): string {
+    if (recarga.precio_kwh !== undefined && recarga.precio_kwh !== null) {
+      return `${recarga.precio_kwh} €/kWh`;
+    }
+
+    if (recarga.tarifa_precio !== undefined && recarga.tarifa_precio !== null) {
+      return `${recarga.tarifa_precio} €/kWh`;
+    }
+
     if (!recarga.tarifa_id) {
       return 'Sin tarifa';
     }
@@ -49,6 +57,24 @@ export class Recargas implements OnInit {
     this.dataService.getTarifas().subscribe({
       next: (data) => {
         this.tarifas = Array.isArray(data) ? data : [];
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loadTarifasDesdeEstaciones();
+      }
+    });
+  }
+
+  private loadTarifasDesdeEstaciones() {
+    this.dataService.getEstaciones().subscribe({
+      next: (estaciones) => {
+        const mapTarifas = new Map<number, Tarifa>();
+        (Array.isArray(estaciones) ? estaciones : []).forEach((estacion: Estacion) => {
+          if (estacion.tarifa?.id !== undefined && estacion.tarifa?.id !== null) {
+            mapTarifas.set(estacion.tarifa.id, estacion.tarifa);
+          }
+        });
+        this.tarifas = Array.from(mapTarifas.values());
         this.cdr.markForCheck();
       },
       error: () => {
