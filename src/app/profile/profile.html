@@ -203,28 +203,6 @@
                         (input)="updateVehicleField('matricula', $event)"
                       />
                     </div>
-
-                    <div class="col-md-6">
-                      <label class="form-label">Capacidad de la bateria (kWh)</label>
-                      <input
-                        type="number"
-                        min="1"
-                        class="form-control"
-                        [value]="vehicleData.capacidadBateria ?? ''"
-                        (input)="updateBattery($event)"
-                      />
-                    </div>
-
-                    <div class="col-md-12">
-                      <label class="form-label">Tipo de conector</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        [value]="vehicleData.tipoConector"
-                        (input)="updateVehicleField('tipoConector', $event)"
-                        placeholder="Ej: Type 2, CCS, CHAdeMO"
-                      />
-                    </div>
                   </div>
 
                   <div class="d-flex justify-content-end mt-3">

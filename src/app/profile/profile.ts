@@ -5,13 +5,6 @@ import { AuthService } from '../services/auth.service';
 import { DataService } from '../services/data.service';
 import { Vehiculo } from '../models/interfaces';
 
-type VehiculoApi = Vehiculo & {
-  capacidad_bateria?: number | null;
-  capacidadBateria?: number | null;
-  tipo_conector?: string;
-  tipoConector?: string;
-};
-
 @Component({
   selector: 'app-profile',
   standalone: true,
@@ -46,8 +39,6 @@ export class Profile implements OnInit {
     marca: '',
     modelo: '',
     matricula: '',
-    capacidadBateria: null as number | null,
-    tipoConector: '',
   };
 
   // Datos de ejemplo (esto vendría de un servicio)
@@ -111,18 +102,11 @@ export class Profile implements OnInit {
     });
   }
 
-  private mapVehicleToForm(vehicle: VehiculoApi) {
-    const capacidadSnake = typeof vehicle.capacidad_bateria === 'number' ? vehicle.capacidad_bateria : null;
-    const capacidadCamel = typeof vehicle.capacidadBateria === 'number' ? vehicle.capacidadBateria : null;
-    const tipoSnake = typeof vehicle.tipo_conector === 'string' ? vehicle.tipo_conector : '';
-    const tipoCamel = typeof vehicle.tipoConector === 'string' ? vehicle.tipoConector : '';
-
+  private mapVehicleToForm(vehicle: Vehiculo) {
     return {
       marca: vehicle.marca ?? '',
       modelo: vehicle.modelo ?? '',
       matricula: vehicle.matricula ?? '',
-      capacidadBateria: (capacidadSnake ?? capacidadCamel) as number | null,
-      tipoConector: (tipoSnake || tipoCamel).trim(),
     };
   }
 
@@ -175,12 +159,9 @@ export class Profile implements OnInit {
     if (
       !this.vehicleData.marca.trim() ||
       !this.vehicleData.modelo.trim() ||
-      !this.vehicleData.matricula.trim() ||
-      !this.vehicleData.tipoConector.trim() ||
-      this.vehicleData.capacidadBateria === null ||
-      this.vehicleData.capacidadBateria <= 0
+      !this.vehicleData.matricula.trim()
     ) {
-      this.vehicleError = 'Completa todos los campos y revisa la capacidad de bateria.';
+      this.vehicleError = 'Completa marca, modelo y matrícula.';
       return;
     }
 
@@ -189,8 +170,6 @@ export class Profile implements OnInit {
       marca: this.vehicleData.marca.trim(),
       modelo: this.vehicleData.modelo.trim(),
       matricula: this.vehicleData.matricula.trim(),
-      capacidad_bateria: this.vehicleData.capacidadBateria,
-      tipo_conector: this.vehicleData.tipoConector.trim(),
     };
 
     const request$ = this.editingVehicleId
@@ -216,7 +195,7 @@ export class Profile implements OnInit {
         clearTimeout(timeoutId);
         this.vehicleCreated = true;
         this.editingVehicleId = vehiculo?.id ?? this.editingVehicleId;
-        this.vehicleData = this.mapVehicleToForm(vehiculo as VehiculoApi);
+        this.vehicleData = this.mapVehicleToForm(vehiculo as Vehiculo);
         this.isLoadingVehicle = false;
       },
       error: (err) => {
@@ -231,14 +210,9 @@ export class Profile implements OnInit {
     });
   }
 
-  updateVehicleField(field: 'marca' | 'modelo' | 'matricula' | 'tipoConector', event: Event) {
+  updateVehicleField(field: 'marca' | 'modelo' | 'matricula', event: Event) {
     const target = event.target as HTMLInputElement;
     this.vehicleData[field] = target.value;
-  }
-
-  updateBattery(event: Event) {
-    const target = event.target as HTMLInputElement;
-    this.vehicleData.capacidadBateria = target.value ? Number(target.value) : null;
   }
 
   updatePasswordField(field: 'actual' | 'nueva' | 'repetir', event: Event) {

@@ -31,3 +31,36 @@
     min-height: 260px;
   }
 }
+
+.vehicle-card-header {
+  background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+}
+
+.vehicle-card-panel {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background: linear-gradient(180deg, #ffffff, #f8f9fa);
+}
+
+.vehicle-card-footer {
+  border-top: 1px dashed var(--bs-border-color);
+}
+
+.vehicle-switch {
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.vehicle-icon-pill {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: rgba(13, 110, 253, 0.12);
+  color: #0d6efd;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}

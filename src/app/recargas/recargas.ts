@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 import { DataService } from '../services/data.service';
 import { AuthService } from '../services/auth.service';
-import { Recarga } from '../models/interfaces';
+import { Recarga, Tarifa } from '../models/interfaces';
 
 @Component({
   selector: 'app-recargas',
@@ -20,6 +20,7 @@ export class Recargas implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   recargas: Recarga[] = [];
+  tarifas: Tarifa[] = [];
   loading = true;
   error = '';
   isAdmin = false;
@@ -27,7 +28,34 @@ export class Recargas implements OnInit {
   ngOnInit() {
     this.isAdmin = this.authService.isAdmin();
     this.cdr.markForCheck();
+    this.loadTarifas();
     this.loadRecargas();
+  }
+
+  getTarifaPrecio(recarga: Recarga): string {
+    if (!recarga.tarifa_id) {
+      return 'Sin tarifa';
+    }
+
+    const tarifa = this.tarifas.find((item) => item.id === recarga.tarifa_id);
+    if (!tarifa) {
+      return 'Precio no disponible';
+    }
+
+    return `${tarifa.precio_kwh} €/kWh`;
+  }
+
+  private loadTarifas() {
+    this.dataService.getTarifas().subscribe({
+      next: (data) => {
+        this.tarifas = Array.isArray(data) ? data : [];
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.tarifas = [];
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   private loadRecargas() {
