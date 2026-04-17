@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "temp": {
+    "plataforma-de-recargas": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -31,13 +31,8 @@
             ],
 
             "scripts": ["node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
             "security": {
               "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
             }
           },
           "configurations": {
@@ -68,10 +63,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "temp:build:production"
+              "buildTarget": "plataforma-de-recargas:build:production"
             },
             "development": {
-              "buildTarget": "temp:build:development"
+              "buildTarget": "plataforma-de-recargas:build:development"
             }
           },
           "defaultConfiguration": "development"

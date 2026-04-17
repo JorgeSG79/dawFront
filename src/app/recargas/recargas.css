@@ -1,0 +1,20 @@
+.recargas-hero {
+	position: relative;
+	overflow: hidden;
+}
+
+.recargas-hero::before {
+	content: '';
+	position: absolute;
+	right: -45px;
+	bottom: -55px;
+	width: 160px;
+	height: 160px;
+	border-radius: 16px;
+	transform: rotate(24deg);
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.detail-row td {
+	border-top: 1px dashed rgba(13, 110, 253, 0.25);
+}
