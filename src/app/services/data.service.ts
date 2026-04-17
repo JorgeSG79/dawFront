@@ -19,48 +19,49 @@ export class DataService {
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  // 1. Obtener todas las estaciones para el mapa
+  //  Obtener todas las estaciones para el mapa
   getEstaciones(): Observable<Estacion[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<Estacion[]>(`${this.apiUrl}/estaciones`, { headers });
   }
 
-  // 2. Obtener mis vehículos (Necesita el Token)
+  //  Obtener mis vehículos
   getMisVehiculos(): Observable<Vehiculo[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<Vehiculo[]>(`${this.apiUrl}/vehiculos`, { headers });
   }
 
+  //Crear vehiculo
   crearVehiculo(vehiculo: {
     marca: string;
     modelo: string;
     matricula: string;
-    capacidad_bateria?: number | null;
-    tipo_conector?: string;
+    // capacidad_bateria?: number | null;
+    // tipo_conector?: string;
   }): Observable<Vehiculo> {
     const headers = this.getAuthHeaders();
     return this.http.post<Vehiculo>(`${this.apiUrl}/vehiculos`, vehiculo, { headers });
   }
 
+  //Actualizar vehiculo
   actualizarVehiculo(id: number, vehiculo: {
     marca: string;
     modelo: string;
     matricula: string;
-    capacidad_bateria?: number | null;
-    tipo_conector?: string;
+    // capacidad_bateria?: number | null;
+    // tipo_conector?: string;
   }): Observable<Vehiculo> {
     const headers = this.getAuthHeaders();
     return this.http.put<Vehiculo>(`${this.apiUrl}/vehiculos/${id}`, vehiculo, { headers });
   }
 
-  // 3. Obtener recargas (user: solo las suyas, admin: todas)
-  // El backend discrimina segun el token enviado
+  //  Obtener recargas (user: solo las suyas, admin: todas)
   getRecargas(): Observable<Recarga[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<Recarga[]>(`${this.apiUrl}/reservas`, { headers });
   }
 
-  // 4. Listado de usuarios (solo admin)
+  // Listado de usuarios (solo admin)
   getUsuarios(): Observable<Usuario[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<Usuario[]>(`${this.apiUrl}/auth/usuarios`, { headers });
@@ -71,7 +72,7 @@ export class DataService {
     return this.http.delete<void>(`${this.apiUrl}/auth/usuarios/${id}`, { headers });
   }
 
-  // 4b. Gestion de tarifas (solo admin)
+  // Gestion de tarifas (solo admin)
   getTarifas(): Observable<Tarifa[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<Tarifa[]>(`${this.apiUrl}/tarifas`, { headers });
@@ -92,7 +93,7 @@ export class DataService {
     return this.http.delete<void>(`${this.apiUrl}/tarifas/${id}`, { headers });
   }
 
-  // 5. Crear una nueva estación (solo admin)
+  // Crear una nueva estación (solo admin)
   crearEstacion(estacion: {
     nombre: string;
     direccion: string;
@@ -110,7 +111,7 @@ export class DataService {
     return this.http.post<Estacion>(`${this.apiUrl}/estaciones`, estacion, { headers });
   }
 
-  // 6. Editar una estación existente (solo admin)
+  // Editar una estación existente (solo admin)
   actualizarEstacion(id: number, estacion: {
     nombre: string;
     direccion: string;
@@ -128,7 +129,7 @@ export class DataService {
     return this.http.put<Estacion>(`${this.apiUrl}/estaciones/${id}`, estacion, { headers });
   }
 
-  // 7. Crear una reserva de carga
+  // Crear una reserva de carga
   crearReserva(reserva: {
     vehiculo_id: number;
     punto_id: number;

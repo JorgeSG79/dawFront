@@ -13,8 +13,10 @@ import { Vehiculo } from '../models/interfaces';
   styleUrls: ['./profile.css']
 })
 export class Profile implements OnInit {
+
   private authService = inject(AuthService);
   private dataService = inject(DataService);
+
   isLoadingProfile = false;
   isLoadingPassword = false;
   showVehicleForm = false;
@@ -27,6 +29,7 @@ export class Profile implements OnInit {
   profileError = '';
   passwordSaved = false;
   passwordError = '';
+  vehicle = false
 
   passwordData = {
     actual: '',
@@ -64,6 +67,8 @@ export class Profile implements OnInit {
   private loadVehicleData() {
     this.dataService.getMisVehiculos().subscribe({
       next: (vehicles) => {
+
+        vehicles.length > 0? this.vehicle = true : this.vehicle = false;
         const currentVehicle = Array.isArray(vehicles) ? vehicles[0] : null;
         if (currentVehicle) {
           this.editingVehicleId = currentVehicle.id;
@@ -147,21 +152,34 @@ export class Profile implements OnInit {
       matricula: this.vehicleData.matricula.trim(),
     };
 
-    const request$ = this.editingVehicleId
-      ? this.dataService.actualizarVehiculo(this.editingVehicleId, payload)
-      : this.dataService.crearVehiculo(payload);
 
-    request$.subscribe({
+    const llamda = this.vehicle ? this.dataService.actualizarVehiculo(this.editingVehicleId!, payload) : this.dataService.crearVehiculo(payload);
+    llamda.subscribe({
       next: (vehiculo) => {
-        this.vehicleCreated = true;
-        this.editingVehicleId = vehiculo?.id ?? this.editingVehicleId;
-        this.vehicleData = this.mapVehicleToForm(vehiculo as Vehiculo);
+        console.log('vehiculo creado', vehiculo);
       },
       error: (err) => {
         this.vehicleError = err?.error?.message || 'No se pudo guardar el vehiculo.';
       }
     });
+
+    const request$ = this.editingVehicleId
+      ? this.dataService.actualizarVehiculo(this.editingVehicleId, payload)
+      : this.dataService.crearVehiculo(payload);
+
+    // request$.subscribe({
+    //   next: (vehiculo) => {
+    //     this.vehicleCreated = true;
+    //     this.editingVehicleId = vehiculo?.id ?? this.editingVehicleId;
+    //     this.vehicleData = this.mapVehicleToForm(vehiculo as Vehiculo);
+    //   },
+    //   error: (err) => {
+    //     this.vehicleError = err?.error?.message || 'No se pudo guardar el vehiculo.';
+    //   }
+    // });
   }
+
+
 
   updateVehicleField(field: 'marca' | 'modelo' | 'matricula', event: Event) {
     const target = event.target as HTMLInputElement;
