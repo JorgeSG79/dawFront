@@ -38,7 +38,6 @@ export class Profile implements OnInit {
   };
 
   vehicleData = {
-    marca: '',
     modelo: '',
     matricula: '',
   };
@@ -85,7 +84,6 @@ export class Profile implements OnInit {
 
   private mapVehicleToForm(vehicle: Vehiculo) {
     return {
-      marca: vehicle.marca ?? '',
       modelo: vehicle.modelo ?? '',
       matricula: vehicle.matricula ?? '',
     };
@@ -138,23 +136,21 @@ export class Profile implements OnInit {
     this.vehicleError = '';
 
     if (
-      !this.vehicleData.marca.trim() ||
       !this.vehicleData.modelo.trim() ||
       !this.vehicleData.matricula.trim()
     ) {
-      this.vehicleError = 'Completa marca, modelo y matrícula.';
+      this.vehicleError = 'Completa modelo y matrícula.';
       return;
     }
 
     const payload = {
-      marca: this.vehicleData.marca.trim(),
       modelo: this.vehicleData.modelo.trim(),
       matricula: this.vehicleData.matricula.trim(),
     };
 
 
-    const llamda = this.vehicle ? this.dataService.actualizarVehiculo(this.editingVehicleId!, payload) : this.dataService.crearVehiculo(payload);
-    llamda.subscribe({
+    const request$ = this.vehicle ? this.dataService.actualizarVehiculo(this.editingVehicleId!, payload) : this.dataService.crearVehiculo(payload);
+    request$.subscribe({
       next: (vehiculo) => {
         console.log('vehiculo creado', vehiculo);
       },
@@ -163,25 +159,11 @@ export class Profile implements OnInit {
       }
     });
 
-    const request$ = this.editingVehicleId
-      ? this.dataService.actualizarVehiculo(this.editingVehicleId, payload)
-      : this.dataService.crearVehiculo(payload);
-
-    // request$.subscribe({
-    //   next: (vehiculo) => {
-    //     this.vehicleCreated = true;
-    //     this.editingVehicleId = vehiculo?.id ?? this.editingVehicleId;
-    //     this.vehicleData = this.mapVehicleToForm(vehiculo as Vehiculo);
-    //   },
-    //   error: (err) => {
-    //     this.vehicleError = err?.error?.message || 'No se pudo guardar el vehiculo.';
-    //   }
-    // });
   }
 
 
 
-  updateVehicleField(field: 'marca' | 'modelo' | 'matricula', event: Event) {
+  updateVehicleField(field: 'modelo' | 'matricula', event: Event) {
     const target = event.target as HTMLInputElement;
     this.vehicleData[field] = target.value;
   }
@@ -292,7 +274,7 @@ export class Profile implements OnInit {
     this.isLoadingProfile = true;
     const updatePayload = {
       nombre: this.editableProfile.firstName.trim(),
-      apellido: this.editableProfile.lastName.trim(),
+      apellidos: this.editableProfile.lastName.trim(),
       email: this.editableProfile.email.trim(),
     };
 

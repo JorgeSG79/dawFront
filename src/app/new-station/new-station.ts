@@ -192,9 +192,6 @@ export class NewStation implements OnInit {
       latitud: this.stationData.latitud,
       longitud: this.stationData.longitud,
       tarifa_id: this.stationData.tarifa_id,
-      num_puntos: this.stationData.num_puntos,
-      conectores_disponibles: this.stationData.conectores_disponibles,
-      activo: this.stationData.activo,
     };
 
     const request$ = this.isEditMode && this.editStationId

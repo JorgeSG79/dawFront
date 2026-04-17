@@ -6,7 +6,7 @@ import { Observable, tap } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/auth'; // Ajusta según tu ruta de Node
+  private apiUrl = 'http://localhost:3000/api/auth';
 
   private canUseStorage(): boolean {
     return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -136,6 +136,8 @@ export class AuthService {
     );
   }
 
+
+// Me falta implementar el cambio en el backend
   changePassword(currentPassword: string, newPassword: string): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/change-password`, {
       passwordActual: currentPassword,

@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 import { DataService } from '../services/data.service';
 import { AuthService } from '../services/auth.service';
-import { Estacion, Recarga, Tarifa } from '../models/interfaces';
+import { Recarga } from '../models/interfaces';
 
 @Component({
   selector: 'app-recargas',
@@ -20,7 +20,6 @@ export class Recargas implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   recargas: Recarga[] = [];
-  tarifas: Tarifa[] = [];
   loading = true;
   error = '';
   isAdmin = false;
@@ -28,60 +27,7 @@ export class Recargas implements OnInit {
   ngOnInit() {
     this.isAdmin = this.authService.isAdmin();
     this.cdr.markForCheck();
-    this.loadTarifas();
     this.loadRecargas();
-  }
-
-  getTarifaPrecio(recarga: Recarga): string {
-    if (recarga.precio_kwh !== undefined && recarga.precio_kwh !== null) {
-      return `${recarga.precio_kwh} €/kWh`;
-    }
-
-    if (recarga.tarifa_precio !== undefined && recarga.tarifa_precio !== null) {
-      return `${recarga.tarifa_precio} €/kWh`;
-    }
-
-    if (!recarga.tarifa_id) {
-      return 'Sin tarifa';
-    }
-
-    const tarifa = this.tarifas.find((item) => item.id === recarga.tarifa_id);
-    if (!tarifa) {
-      return 'Precio no disponible';
-    }
-
-    return `${tarifa.precio_kwh} €/kWh`;
-  }
-
-  private loadTarifas() {
-    this.dataService.getTarifas().subscribe({
-      next: (data) => {
-        this.tarifas = Array.isArray(data) ? data : [];
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.loadTarifasDesdeEstaciones();
-      }
-    });
-  }
-
-  private loadTarifasDesdeEstaciones() {
-    this.dataService.getEstaciones().subscribe({
-      next: (estaciones) => {
-        const mapTarifas = new Map<number, Tarifa>();
-        (Array.isArray(estaciones) ? estaciones : []).forEach((estacion: Estacion) => {
-          if (estacion.tarifa?.id !== undefined && estacion.tarifa?.id !== null) {
-            mapTarifas.set(estacion.tarifa.id, estacion.tarifa);
-          }
-        });
-        this.tarifas = Array.from(mapTarifas.values());
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.tarifas = [];
-        this.cdr.markForCheck();
-      }
-    });
   }
 
   private loadRecargas() {
@@ -89,8 +35,7 @@ export class Recargas implements OnInit {
     this.error = '';
     this.cdr.markForCheck();
 
-    // El backend discrimina automaticamente segun el token
-    this.dataService.getRecargas()
+    this.dataService.getHistorialRecargas()
       .pipe(
         finalize(() => {
           this.loading = false;
@@ -98,11 +43,11 @@ export class Recargas implements OnInit {
         })
       )
       .subscribe({
-        next: (data) => {
+        next: (data: Recarga[]) => {
           this.recargas = Array.isArray(data) ? data : [];
           this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: (err: { error?: { message?: string } }) => {
           this.error = err?.error?.message || 'No se pudieron cargar las recargas.';
           this.recargas = [];
           this.cdr.markForCheck();

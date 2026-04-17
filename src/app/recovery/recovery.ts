@@ -22,20 +22,25 @@ export class Recovery {
   message = signal('');
 
   onSubmit() {
-    if (this.recoveryForm.valid) {
-      this.isLoading.set(true);
-      this.message.set('');
-      const email = this.recoveryForm.value.email;
-      this.http.post('/api/recovery', { email }).subscribe({
-        next: () => {
-          this.message.set('Email de recuperación enviado exitosamente.');
-          this.isLoading.set(false);
-        },
-        error: (err) => {
-          this.message.set('Error al enviar el email de recuperación. Inténtalo de nuevo.');
-          this.isLoading.set(false);
-        },
-      });
-    }
+
+    //  No implementado en el Backkend
+    console.log('Aún no se puede cambiar la contraseña');
+
+
+    // if (this.recoveryForm.valid) {
+    //   this.isLoading.set(true);
+    //   this.message.set('');
+    //   const email = this.recoveryForm.value.email;
+    //   this.http.post('/api/recovery', { email }).subscribe({
+    //     next: () => {
+    //       this.message.set('Email de recuperación enviado exitosamente.');
+    //       this.isLoading.set(false);
+    //     },
+    //     error: (err) => {
+    //       this.message.set('Error al enviar el email de recuperación. Inténtalo de nuevo.');
+    //       this.isLoading.set(false);
+    //     },
+    //   });
+    // }
   }
 }

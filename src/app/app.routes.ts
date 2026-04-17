@@ -20,4 +20,5 @@ export const routes: Routes = [
 	{ path: 'admin-tarifas', component: AdminTarifas },
 	{ path: 'new-station', component: NewStation },
 	{ path: 'new-station/:id', component: NewStation },
+	{ path: '**', redirectTo: 'dashboard' },
 ];

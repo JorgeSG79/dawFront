@@ -33,11 +33,8 @@ export class DataService {
 
   //Crear vehiculo
   crearVehiculo(vehiculo: {
-    marca: string;
     modelo: string;
     matricula: string;
-    // capacidad_bateria?: number | null;
-    // tipo_conector?: string;
   }): Observable<Vehiculo> {
     const headers = this.getAuthHeaders();
     return this.http.post<Vehiculo>(`${this.apiUrl}/vehiculos`, vehiculo, { headers });
@@ -45,18 +42,22 @@ export class DataService {
 
   //Actualizar vehiculo
   actualizarVehiculo(id: number, vehiculo: {
-    marca: string;
     modelo: string;
     matricula: string;
-    // capacidad_bateria?: number | null;
-    // tipo_conector?: string;
   }): Observable<Vehiculo> {
     const headers = this.getAuthHeaders();
     return this.http.put<Vehiculo>(`${this.apiUrl}/vehiculos/${id}`, vehiculo, { headers });
   }
 
-  //  Obtener recargas (user: solo las suyas, admin: todas)
-  getRecargas(): Observable<Recarga[]> {
+// Obtener historial de recargas (user: solo las suyas, admin: todas)
+  getHistorialRecargas(): Observable<Recarga[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Recarga[]>(`${this.apiUrl}/recargas`, { headers });
+  }
+
+
+  //  Obtener reservas (user: solo las suyas, admin: todas)
+  getReservas(): Observable<Recarga[]> {
     const headers = this.getAuthHeaders();
     return this.http.get<Recarga[]>(`${this.apiUrl}/reservas`, { headers });
   }
@@ -127,6 +128,11 @@ export class DataService {
   }): Observable<Estacion> {
     const headers = this.getAuthHeaders();
     return this.http.put<Estacion>(`${this.apiUrl}/estaciones/${id}`, estacion, { headers });
+  }
+
+  eliminarEstacion(id: number): Observable<void> {
+    const headers = this.getAuthHeaders();
+    return this.http.delete<void>(`${this.apiUrl}/estaciones/${id}`, { headers });
   }
 
   // Crear una reserva de carga

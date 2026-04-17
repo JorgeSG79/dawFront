@@ -15,7 +15,6 @@ export interface Usuario {
 export interface Vehiculo {
   id: number;
   matricula: string;
-  marca: string;
   modelo: string;
 }
 
@@ -50,6 +49,7 @@ export interface Estacion {
 
 export interface Recarga {
   id: number;
+  reserva_id?: number | null;
   usuario_id: number;
   punto_id: number;
   vehiculo_id: number;
