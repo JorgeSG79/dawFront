@@ -1,0 +1,27 @@
+.compact-station-hero h5 {
+	font-size: 1.05rem;
+}
+
+.compact-station-hero p {
+	line-height: 1.2;
+}
+
+.compact-station-card .form-label {
+	margin-bottom: 0.3rem;
+	font-size: 0.9rem;
+}
+
+.compact-station-card .form-control,
+.compact-station-card .form-select {
+	padding-top: 0.42rem;
+	padding-bottom: 0.42rem;
+}
+
+.compact-station-form h6 {
+	font-size: 0.72rem;
+	letter-spacing: 0.04em;
+}
+
+.compact-help-text {
+	font-size: 0.75rem;
+}

@@ -7,6 +7,10 @@
         <span class="badge rounded-pill" [class.text-bg-warning]="isAdmin" [class.text-bg-primary]="isCliente">
           {{ isAdmin ? 'ADMIN' : 'CLIENTE' }}
         </span>
+
+        <span class="small text-secondary d-none d-md-inline">
+          Hola, <span class="fw-semibold text-primary-emphasis">{{ userName }}</span>
+        </span>
       </div>
 
       <div class="d-flex align-items-center gap-2 justify-content-end flex-nowrap overflow-visible text-nowrap pb-1">
@@ -96,36 +100,34 @@
       </div>
 
       @if (isCliente) {
-        <section class="card shadow-sm border-0 mt-3 vehicle-card overflow-hidden">
-          <div class="card-header vehicle-card-header py-2 border-0 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 text-white">
+        <section class="card shadow-sm border-0 mt-2 vehicle-card overflow-hidden">
+          <div class="card-header vehicle-card-header py-1 px-3 border-0 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 text-white small fw-semibold">
               <i class="fa-solid fa-car-side me-2"></i>Mi vehículo
             </h6>
-            <span class="badge rounded-pill text-bg-light text-dark">{{ misCoches.length }} registrado(s)</span>
+            <span class="badge rounded-pill text-bg-light text-dark small">{{ misCoches.length }} registrado(s)</span>
           </div>
 
           @if (misCoches.length > 0) {
-            <div class="card-body py-3">
+            <div class="card-body py-2 px-3">
               <div class="vehicle-card-panel h-100">
-                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-                  <div class="d-flex align-items-start gap-3">
+                <div class="vehicle-summary-row d-flex align-items-center justify-content-between gap-2 overflow-auto">
+                  <div class="d-flex align-items-center gap-2 flex-shrink-0">
                     <span class="vehicle-icon-pill">
                       <i class="fa-solid fa-car"></i>
                     </span>
-                    <div>
-                      <p class="text-muted small mb-1">Vehículo seleccionado</p>
-                      <h6 class="text-primary-emphasis mb-1">{{ selectedVehicle?.marca }} {{ selectedVehicle?.modelo }}</h6>
-                      <span class="badge rounded-pill text-bg-dark-subtle text-dark fw-semibold">
-                        <i class="fa-solid fa-id-card me-1"></i>{{ selectedVehicle?.matricula }}
-                      </span>
-                    </div>
+                    <span class="text-muted small mb-0 flex-shrink-0">Vehículo seleccionado</span>
+                    <h6 class="text-primary-emphasis mb-0 vehicle-title flex-shrink-0">{{ selectedVehicle?.marca }} {{ selectedVehicle?.modelo }}</h6>
+                    <span class="badge rounded-pill text-bg-dark-subtle text-dark fw-semibold vehicle-plate-badge flex-shrink-0">
+                      <i class="fa-solid fa-id-card me-1"></i>{{ selectedVehicle?.matricula }}
+                    </span>
                   </div>
 
-                  <div class="d-flex flex-wrap gap-2">
-                    <span class="badge text-bg-primary-subtle text-primary-emphasis fw-semibold">
+                  <div class="d-flex align-items-center gap-1 vehicle-statuses flex-shrink-0">
+                    <span class="badge text-bg-primary-subtle text-primary-emphasis fw-semibold flex-shrink-0">
                       <i class="fa-solid fa-bolt me-1"></i>Listo para reservar
                     </span>
-                    <span class="badge text-bg-light border text-secondary">
+                    <span class="badge text-bg-light border text-secondary flex-shrink-0">
                       <i class="fa-solid fa-check-circle me-1 text-success"></i>Activo
                     </span>
                   </div>
@@ -134,7 +136,8 @@
             </div>
 
             @if (misCoches.length > 1) {
-              <div class="card-footer bg-white d-flex flex-wrap gap-2 py-2 vehicle-card-footer">
+              <div class="card-footer bg-white py-1 px-3 vehicle-card-footer">
+                <div class="d-flex gap-2 overflow-auto vehicle-switches-row">
                 @for (coche of misCoches; track $index) {
                   <button
                     type="button"
@@ -146,10 +149,11 @@
                     {{ coche.marca }} {{ coche.modelo }} - {{ coche.matricula }}
                   </button>
                 }
+                </div>
               </div>
             }
           } @else {
-            <div class="card-body text-muted d-flex align-items-center gap-2">
+            <div class="card-body py-2 text-muted d-flex align-items-center gap-2 small">
               <i class="fa-regular fa-circle-xmark"></i>
               <span>No tienes vehículos asociados todavía.</span>
             </div>

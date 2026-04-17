@@ -12,8 +12,8 @@
 }
 
 #map.map-cliente {
-  height: 50vh;
-  min-height: 320px;
+  height: 64vh;
+  min-height: 440px;
 }
 
 @media (max-width: 768px) {
@@ -27,8 +27,8 @@
   }
 
   #map.map-cliente {
-    height: 42vh;
-    min-height: 260px;
+    height: 52vh;
+    min-height: 340px;
   }
 }
 
@@ -39,7 +39,7 @@
 .vehicle-card-panel {
   border: 1px solid var(--bs-border-color);
   border-radius: 0.75rem;
-  padding: 0.75rem;
+  padding: 0.5rem 0.625rem;
   background: linear-gradient(180deg, #ffffff, #f8f9fa);
 }
 
@@ -50,17 +50,54 @@
 .vehicle-switch {
   border-radius: 999px;
   font-weight: 600;
+  white-space: nowrap;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
 }
 
 .vehicle-icon-pill {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 1.9rem;
+  height: 1.9rem;
   border-radius: 999px;
   background: rgba(13, 110, 253, 0.12);
   color: #0d6efd;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 0.9rem;
   flex-shrink: 0;
+}
+
+.vehicle-title {
+  line-height: 1.15;
+  font-size: 0.95rem;
+}
+
+.vehicle-plate-badge {
+  font-size: 0.72rem;
+}
+
+.vehicle-statuses .badge {
+  font-size: 0.68rem;
+}
+
+.vehicle-summary-row {
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
+}
+
+.vehicle-switches-row {
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
+  padding-bottom: 0.125rem;
+}
+
+@media (max-width: 768px) {
+  .vehicle-card-panel {
+    padding: 0.625rem;
+  }
+
+  .vehicle-summary-row {
+    justify-content: flex-start;
+  }
 }

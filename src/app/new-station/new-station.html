@@ -1,6 +1,6 @@
-<div class="container py-4 py-lg-5" style="max-width: 920px;">
-  <section class="card border-0 shadow-sm mb-3 bg-primary bg-gradient text-white">
-    <div class="card-body p-3 p-md-4">
+<div class="container py-4" style="max-width: 920px;">
+  <section class="card border-0 shadow-sm mb-3 bg-primary bg-gradient text-white compact-station-hero">
+    <div class="card-body p-3">
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
         <div>
           <span class="badge rounded-pill text-bg-light text-primary fw-semibold mb-1 small">Administración</span>
@@ -14,8 +14,8 @@
     </div>
   </section>
 
-  <div class="card shadow-sm border-0 overflow-hidden">
-    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+  <div class="card shadow-sm border-0 overflow-hidden compact-station-card">
+    <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center">
       <h6 class="mb-0 fw-semibold text-secondary">
         <i class="fa-solid" [class.fa-circle-plus]="!isEditMode" [class.fa-pen-to-square]="isEditMode"></i>
         <span class="ms-2">{{ isEditMode ? 'Formulario de actualización' : 'Formulario de creación' }}</span>
@@ -24,16 +24,16 @@
         <span class="badge text-bg-warning">Modo edición</span>
       }
     </div>
-    <div class="card-body p-4">
+    <div class="card-body p-3 p-md-3">
       @if (isEditMode && loadingStation) {
-        <div class="alert alert-info mb-4 d-flex align-items-center" role="alert">
+        <div class="alert alert-info mb-3 py-2 d-flex align-items-center" role="alert">
           <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
           Cargando datos de la estación...
         </div>
       }
 
       <form (ngSubmit)="submit()">
-        <div class="row g-3">
+        <div class="row g-2 compact-station-form">
 
           <div class="col-12">
             <h6 class="text-uppercase text-muted small fw-bold mb-1">Datos generales</h6>
@@ -81,7 +81,7 @@
               (input)="updateField('longitud', $event)" placeholder="Ej: -3.7038" />
           </div>
 
-          <div class="col-12 mt-2">
+          <div class="col-12 mt-1">
             <h6 class="text-uppercase text-muted small fw-bold mb-1">Configuración técnica</h6>
           </div>
 
@@ -92,7 +92,7 @@
                 <option [value]="tarifa.id">{{ tarifa.nombre }}</option>
               }
             </select>
-            <small class="text-muted">Selecciona una de las 3 tarifas existentes.</small>
+            <small class="text-muted compact-help-text">Selecciona una de las 3 tarifas existentes.</small>
           </div>
 
           <div class="col-md-6">
@@ -120,16 +120,16 @@
         </div>
 
         @if (error) {
-          <div class="alert alert-danger mt-4 mb-0">{{ error }}</div>
+          <div class="alert alert-danger mt-3 mb-0 py-2">{{ error }}</div>
         }
 
         @if (success) {
-          <div class="alert alert-success mt-4 mb-0">
+          <div class="alert alert-success mt-3 mb-0 py-2">
             {{ isEditMode ? 'Estación actualizada correctamente.' : 'Estación creada correctamente.' }}
           </div>
         }
 
-        <div class="d-flex justify-content-end mt-4">
+        <div class="d-flex justify-content-end mt-3">
           <button type="submit" class="btn btn-primary px-4" [disabled]="submitting || loadingStation">
             @if (submitting) {
               <span class="spinner-border spinner-border-sm me-1" role="status"></span>

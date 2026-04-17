@@ -4,10 +4,17 @@
 	</div>
 	<h2 class="mb-4 text-center">Registro de usuario</h2>
 	<div class="mb-3">
-		<label for="name" class="form-label">Nombre</label>
-		<input id="name" type="text" formControlName="name" required class="form-control" [class.is-invalid]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched" />
-		@if (registerForm.get('name')?.invalid && registerForm.get('name')?.touched) {
+		<label for="nombre" class="form-label">Nombre</label>
+		<input id="nombre" type="text" formControlName="nombre" required class="form-control" [class.is-invalid]="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched" />
+		@if (registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched) {
 			<div class="invalid-feedback">Nombre requerido (mínimo 2 caracteres)</div>
+		}
+	</div>
+	<div class="mb-3">
+		<label for="apellidos" class="form-label">Apellidos</label>
+		<input id="apellidos" type="text" formControlName="apellidos" required class="form-control" [class.is-invalid]="registerForm.get('apellidos')?.invalid && registerForm.get('apellidos')?.touched" />
+		@if (registerForm.get('apellidos')?.invalid && registerForm.get('apellidos')?.touched) {
+			<div class="invalid-feedback">Apellidos requeridos (mínimo 2 caracteres)</div>
 		}
 	</div>
 	<div class="mb-3">
@@ -18,10 +25,17 @@
 		}
 	</div>
 	<div class="mb-3">
+		<label for="telefono" class="form-label">Teléfono</label>
+		<input id="telefono" type="text" formControlName="telefono" required class="form-control" [class.is-invalid]="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched" />
+		@if (registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched) {
+			<div class="invalid-feedback">Teléfono inválido (9 dígitos)</div>
+		}
+	</div>
+	<div class="mb-3">
 		<label for="password" class="form-label">Contraseña</label>
 		<input id="password" type="password" formControlName="password" required class="form-control" [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" />
 		@if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
-			<div class="invalid-feedback">Contraseña requerida (mínimo 4 caracteres)</div>
+			<div class="invalid-feedback">Contraseña requerida (mínimo 6 caracteres)</div>
 		}
 	</div>
 	<div class="mb-3">

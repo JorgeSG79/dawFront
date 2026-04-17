@@ -80,6 +80,16 @@ export class AuthService {
     );
   }
 
+  register(payload: {
+    nombre: string;
+    apellidos: string;
+    email: string;
+    password: string;
+    telefono: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/register`, payload);
+  }
+
   logout() {
     this.removeStorageItem('token');
     this.removeStorageItem('user');
