@@ -64,23 +64,9 @@ export class Profile implements OnInit {
 
   private loadVehicleData() {
     this.isLoadingVehicle = true;
-    let settled = false;
-    const timeoutId = setTimeout(() => {
-      if (settled) {
-        return;
-      }
-      settled = true;
-      this.isLoadingVehicle = false;
-      this.vehicleError = 'La carga del vehiculo tardó demasiado. Revisa conexión o backend.';
-    }, 15000);
 
     this.dataService.getMisVehiculos().subscribe({
       next: (vehicles) => {
-        if (settled) {
-          return;
-        }
-        settled = true;
-        clearTimeout(timeoutId);
         const currentVehicle = Array.isArray(vehicles) ? vehicles[0] : null;
         if (currentVehicle) {
           this.editingVehicleId = currentVehicle.id;
@@ -91,11 +77,6 @@ export class Profile implements OnInit {
         this.isLoadingVehicle = false;
       },
       error: () => {
-        if (settled) {
-          return;
-        }
-        settled = true;
-        clearTimeout(timeoutId);
         this.isLoadingVehicle = false;
         this.vehicleError = 'No se pudieron cargar los datos del vehiculo.';
       }
