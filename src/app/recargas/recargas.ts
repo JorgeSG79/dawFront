@@ -33,10 +33,12 @@ export class Recargas implements OnInit {
     this.dataService.getHistorialRecargas()
       .subscribe({
         next: (data: Recarga[]) => {
+          console.log('[recargas] next:', data);
           this.recargas = Array.isArray(data) ? data : [];
           this.loading = false;
         },
         error: (err: { error?: { message?: string } }) => {
+          console.error('[recargas] error:', err);
           this.error = err?.error?.message || 'No se pudieron cargar las recargas.';
           this.recargas = [];
           this.loading = false;
