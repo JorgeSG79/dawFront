@@ -61,6 +61,7 @@
             <table class="table table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
+                  <th class="ps-3">Ver</th>
                   <th>Reserva ID</th>
                   <th>Inicio</th>
                   <th>Fin</th>
@@ -72,6 +73,19 @@
               <tbody>
                 @for (r of recargas; track r.id) {
                   <tr>
+                    <td class="ps-3">
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        [class.btn-outline-primary]="selectedRecargaId !== r.id"
+                        [class.btn-primary]="selectedRecargaId === r.id"
+                        (click)="toggleReservaDetalle(r)"
+                        [attr.aria-label]="'Ver reserva asociada a la recarga ' + r.id"
+                        [attr.aria-expanded]="selectedRecargaId === r.id"
+                      >
+                        <i class="fa-solid fa-eye"></i>
+                      </button>
+                    </td>
                     <td>
                       <span class="badge text-bg-dark-subtle text-dark fw-semibold">
                         {{ r.reserva_id ?? 'Sin reserva' }}
@@ -83,6 +97,41 @@
                     <td>{{ (r.kwh_consumidos ?? 0) | number:'1.0-2' }} kWh</td>
                     <td class="pe-3 fw-semibold">{{ (r.coste_total ?? 0) | number:'1.2-2' }} €</td>
                   </tr>
+
+                  @if (selectedRecargaId === r.id) {
+                    <tr class="table-light detail-row">
+                      <td class="ps-3 pe-3" colspan="7">
+                        @if (detalleLoading) {
+                          <div class="d-flex align-items-center gap-2 py-2">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></div>
+                            <span class="text-muted small">Cargando reserva asociada...</span>
+                          </div>
+                        }
+
+                        @if (!detalleLoading && detalleError) {
+                          <div class="alert alert-warning py-2 px-3 mb-0" role="alert">
+                            {{ detalleError }}
+                          </div>
+                        }
+
+                        @if (!detalleLoading && !detalleError && selectedReserva) {
+                          <div class="py-2">
+                            <div class="fw-semibold text-secondary mb-2">
+                              <i class="fa-solid fa-receipt me-2 text-primary"></i>Reserva asociada
+                            </div>
+                            <div class="row g-2 small">
+                              <div class="col-12 col-md-3"><span class="text-muted">ID:</span> {{ selectedReserva.id }}</div>
+                              <div class="col-12 col-md-3"><span class="text-muted">Fecha:</span> {{ selectedReserva.fecha_reserva | date:'dd/MM/yyyy HH:mm' }}</div>
+                              <div class="col-12 col-md-3"><span class="text-muted">Punto:</span> {{ selectedReserva.nombre_punto || '-' }}</div>
+                              <div class="col-12 col-md-3"><span class="text-muted">Tarifa:</span> {{ selectedReserva.tarifa_id ?? '-' }}</div>
+                              <div class="col-12 col-md-3"><span class="text-muted">Matrícula:</span> {{ selectedReserva.matricula || '-' }}</div>
+                              <div class="col-12 col-md-3"><span class="text-muted">Modelo:</span> {{ selectedReserva.modelo || '-' }}</div>
+                            </div>
+                          </div>
+                        }
+                      </td>
+                    </tr>
+                  }
                 }
               </tbody>
             </table>
