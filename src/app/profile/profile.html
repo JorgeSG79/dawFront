@@ -167,12 +167,6 @@
                 <form class="border-top pt-3 mt-4" (ngSubmit)="submitVehicle()">
                   <h5 class="mb-3">{{ editingVehicleId ? 'Editar vehiculo' : 'Nuevo vehiculo' }}</h5>
 
-                  @if (isLoadingVehicle) {
-                    <div class="alert alert-info py-2">
-                      Cargando datos del vehiculo...
-                    </div>
-                  }
-
                   <div class="row g-3">
                     <div class="col-md-6">
                       <label class="form-label">Marca</label>
@@ -206,12 +200,8 @@
                   </div>
 
                   <div class="d-flex justify-content-end mt-3">
-                    <button type="submit" class="btn btn-success btn-sm" [disabled]="isLoadingVehicle">
-                      @if (!isLoadingVehicle) {
-                        {{ editingVehicleId ? 'Actualizar vehiculo' : 'Guardar vehiculo' }}
-                      } @else {
-                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...
-                      }
+                    <button type="submit" class="btn btn-success btn-sm">
+                      {{ editingVehicleId ? 'Actualizar vehiculo' : 'Guardar vehiculo' }}
                     </button>
                   </div>
 

@@ -17,7 +17,6 @@ export class Profile implements OnInit {
   private dataService = inject(DataService);
   isLoadingProfile = false;
   isLoadingPassword = false;
-  isLoadingVehicle = false;
   showVehicleForm = false;
   showPasswordForm = false;
   vehicleCreated = false;
@@ -63,8 +62,6 @@ export class Profile implements OnInit {
   }
 
   private loadVehicleData() {
-    this.isLoadingVehicle = true;
-
     this.dataService.getMisVehiculos().subscribe({
       next: (vehicles) => {
         const currentVehicle = Array.isArray(vehicles) ? vehicles[0] : null;
@@ -74,10 +71,8 @@ export class Profile implements OnInit {
         } else {
           this.editingVehicleId = null;
         }
-        this.isLoadingVehicle = false;
       },
       error: () => {
-        this.isLoadingVehicle = false;
         this.vehicleError = 'No se pudieron cargar los datos del vehiculo.';
       }
     });
@@ -146,7 +141,6 @@ export class Profile implements OnInit {
       return;
     }
 
-    this.isLoadingVehicle = true;
     const payload = {
       marca: this.vehicleData.marca.trim(),
       modelo: this.vehicleData.modelo.trim(),
@@ -157,35 +151,13 @@ export class Profile implements OnInit {
       ? this.dataService.actualizarVehiculo(this.editingVehicleId, payload)
       : this.dataService.crearVehiculo(payload);
 
-    let settled = false;
-    const timeoutId = setTimeout(() => {
-      if (settled) {
-        return;
-      }
-      settled = true;
-      this.isLoadingVehicle = false;
-      this.vehicleError = 'La operación del vehiculo tardó demasiado. Revisa conexión o backend.';
-    }, 15000);
-
     request$.subscribe({
       next: (vehiculo) => {
-        if (settled) {
-          return;
-        }
-        settled = true;
-        clearTimeout(timeoutId);
         this.vehicleCreated = true;
         this.editingVehicleId = vehiculo?.id ?? this.editingVehicleId;
         this.vehicleData = this.mapVehicleToForm(vehiculo as Vehiculo);
-        this.isLoadingVehicle = false;
       },
       error: (err) => {
-        if (settled) {
-          return;
-        }
-        settled = true;
-        clearTimeout(timeoutId);
-        this.isLoadingVehicle = false;
         this.vehicleError = err?.error?.message || 'No se pudo guardar el vehiculo.';
       }
     });
