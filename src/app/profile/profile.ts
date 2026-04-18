@@ -90,24 +90,43 @@ export class Profile implements OnInit {
   }
 
   private loadUserData() {
-    const currentUser = this.authService.getCurrentUser();
-    console.log(currentUser);
+    this.authService.getUser().subscribe({
+      next: (user) => {
+        this.user = {
+          firstName: user?.nombre || user?.firstName || 'Usuario',
+          lastName: user?.apellidos || user?.apellido || user?.lastName || '',
+          email: user?.email || '',
+          role: user?.rol || user?.role || 'cliente',
+          joinedDate: new Date().toLocaleDateString(),
+          avatar: `https://ui-avatars.com/api/?name=${user?.nombre || 'User'}&background=e3f2fd&color=0d6efd&size=128`,
+        };
+        this.editableProfile = {
+          firstName: this.user.firstName,
+          lastName: this.user.lastName,
+          email: this.user.email,
+        };
+      },
+      error: () => {
+        const currentUser = this.authService.getCurrentUser();
+        if (!currentUser) {
+          return;
+        }
 
-    if (currentUser) {
-      this.user = {
-        firstName: currentUser.nombre || currentUser.firstName || 'Usuario',
-        lastName: currentUser.apellido || currentUser.lastName || '',
-        email: currentUser.email || '',
-        role: currentUser.rol || 'cliente',
-        joinedDate:  'Desconocida',
-        avatar: `https://ui-avatars.com/api/?name=${currentUser.nombre || 'User'}&background=e3f2fd&color=0d6efd&size=128`,
-      };
-      this.editableProfile = {
-        firstName: this.user.firstName,
-        lastName: this.user.lastName,
-        email: this.user.email,
-      };
-    }
+        this.user = {
+          firstName: currentUser.nombre || currentUser.firstName || 'Usuario',
+          lastName: currentUser.apellidos || currentUser.apellido || currentUser.lastName || '',
+          email: currentUser.email || '',
+          role: currentUser.rol || currentUser.role || 'cliente',
+          joinedDate: 'Desconocida',
+          avatar: `https://ui-avatars.com/api/?name=${currentUser.nombre || 'User'}&background=e3f2fd&color=0d6efd&size=128`,
+        };
+        this.editableProfile = {
+          firstName: this.user.firstName,
+          lastName: this.user.lastName,
+          email: this.user.email,
+        };
+      }
+    });
   }
 
   toggleVehicleForm() {

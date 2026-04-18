@@ -20,6 +20,8 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
   private ngZone = inject(NgZone);
   @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
   private resizeListener?: () => void;
+  private leafletLib: any;
+  private stationMarkers: any[] = [];
 
   map: any;
   adminMapHeightPx: number | null = null;
@@ -156,7 +158,9 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
     }).subscribe({
       next: () => {
         this.reserva.cargando = false;
+        this.map?.closePopup();
         this.cerrarModalReserva();
+        this.cargarEstaciones();
         alert('¡Reserva realizada con éxito!');
       },
       error: (err) => {
@@ -169,6 +173,7 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
   async ngAfterViewInit() {
     if (typeof window !== 'undefined') {
       const L = await import('leaflet');
+      this.leafletLib = L;
 
       // Inicializamos el mapa
       this.map = L.map('map').setView([40.4168, -3.7038], 7);
@@ -177,75 +182,7 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(this.map);
 
-      this.dataService.getEstaciones().subscribe({
-        next: (estaciones) => {
-          this.estacionesCount = estaciones.length;
-
-          estaciones.forEach(est => {
-            const lat = Number(est.latitud);
-            const lng = Number(est.longitud);
-
-            if (Number.isNaN(lat) || Number.isNaN(lng)) {
-              return;
-            }
-
-            const marker = L.marker([lat, lng]).addTo(this.map);
-            const ubicacion = [est.ciudad, est.provincia].filter(Boolean).join(', ');
-
-            // Contar puntos realmente disponibles para reserva
-            const puntosActivos = est.puntos?.filter(p => this.isPuntoDisponible(p)).length ?? 0;
-            const totalPuntos = est.puntos?.length ?? 0;
-            const conectoresInfo = `${puntosActivos}/${totalPuntos} disponibles`;
-
-            // Generar tabla de puntos
-            let puntosHtml = '<table class="table table-sm mb-2"><tbody>';
-            est.puntos?.forEach(punto => {
-              const estadoActual = this.getEstadoPunto(punto);
-              const estado = estadoActual || (punto.activo === 1 ? 'disponible' : 'fuera de servicio');
-              const badgeClass = estado === 'disponible'
-                ? 'bg-success'
-                : estado === 'ocupado'
-                  ? 'bg-warning text-dark'
-                  : 'bg-danger';
-              puntosHtml += `<tr><td><small>${punto.nombre}</small></td><td><span class="badge ${badgeClass}">${estado}</span></td></tr>`;
-            });
-            puntosHtml += '</tbody></table>';
-
-            const btnId = `btn-${this.isAdmin ? 'edit' : 'reserva'}-${est.id}`;
-            const btnHtml = this.isAdmin
-              ? `<button id="${btnId}" class="btn btn-sm btn-warning w-100 mt-2"><i class="fa-solid fa-pen-to-square"></i> Editar estación</button>`
-              : `<button id="${btnId}" class="btn btn-sm btn-primary w-100 mt-2"><i class="fa-solid fa-calendar-check"></i> Hacer reserva</button>`;
-
-            marker.bindPopup(`
-              <div style="width: 300px;">
-                <b>${est.nombre}</b><br>
-                ${est.direccion}<br>
-                ${ubicacion ? `<small class="text-muted">${ubicacion}</small><br>` : ''}
-                <small class="fw-semibold">Total: ${conectoresInfo}</small>
-                <hr class="my-2">
-                <div style="max-height: 200px; overflow-y: auto;">
-                  ${puntosHtml}
-                </div>
-                ${btnHtml}
-              </div>
-            `);
-
-            marker.on('popupopen', () => {
-              const btn = document.getElementById(btnId);
-              if (btn) {
-                btn.addEventListener('click', () => {
-                  this.ngZone.run(() => {
-                    this.isAdmin ? this.editarEstacion(est) : this.abrirModalReserva(est);
-                  });
-                });
-              }
-            });
-          });
-        },
-        error: (err) => {
-          console.error('Error al cargar estaciones:', err);
-        }
-      });
+      this.cargarEstaciones();
 
       setTimeout(() => {
         this.map.invalidateSize();
@@ -255,6 +192,88 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
       this.resizeListener = () => this.ajustarAlturaMapaAdmin();
       window.addEventListener('resize', this.resizeListener, { passive: true });
     }
+  }
+
+  private cargarEstaciones() {
+    if (!this.map || !this.leafletLib) {
+      return;
+    }
+
+    this.stationMarkers.forEach(marker => this.map.removeLayer(marker));
+    this.stationMarkers = [];
+
+    const L = this.leafletLib;
+
+    this.dataService.getEstaciones().subscribe({
+      next: (estaciones) => {
+        this.estacionesCount = estaciones.length;
+
+        estaciones.forEach(est => {
+          const lat = Number(est.latitud);
+          const lng = Number(est.longitud);
+
+          if (Number.isNaN(lat) || Number.isNaN(lng)) {
+            return;
+          }
+
+          const marker = L.marker([lat, lng]).addTo(this.map);
+          this.stationMarkers.push(marker);
+          const ubicacion = [est.ciudad, est.provincia].filter(Boolean).join(', ');
+
+          // Contar puntos realmente disponibles para reserva (esto tengo que revisar si se hace bien)
+          const puntosActivos = est.puntos?.filter(p => this.isPuntoDisponible(p)).length ?? 0;
+          const totalPuntos = est.puntos?.length ?? 0;
+          const conectoresInfo = `${puntosActivos}/${totalPuntos} disponibles`;
+
+          // Generar tabla de puntos
+          let puntosHtml = '<table class="table table-sm mb-2"><tbody>';
+          est.puntos?.forEach(punto => {
+            const estadoActual = this.getEstadoPunto(punto);
+            const estado = estadoActual || (punto.activo === 1 ? 'disponible' : 'fuera de servicio');
+            const badgeClass = estado === 'disponible'
+              ? 'bg-success'
+              : estado === 'ocupado'
+                ? 'bg-warning text-dark'
+                : 'bg-danger';
+            puntosHtml += `<tr><td><small>${punto.nombre}</small></td><td><span class="badge ${badgeClass}">${estado}</span></td></tr>`;
+          });
+          puntosHtml += '</tbody></table>';
+
+          const btnId = `btn-${this.isAdmin ? 'edit' : 'reserva'}-${est.id}`;
+          const btnHtml = this.isAdmin
+            ? `<button id="${btnId}" class="btn btn-sm btn-warning w-100 mt-2"><i class="fa-solid fa-pen-to-square"></i> Editar estación</button>`
+            : `<button id="${btnId}" class="btn btn-sm btn-primary w-100 mt-2"><i class="fa-solid fa-calendar-check"></i> Hacer reserva</button>`;
+
+          marker.bindPopup(`
+            <div style="width: 300px;">
+              <b>${est.nombre}</b><br>
+              ${est.direccion}<br>
+              ${ubicacion ? `<small class="text-muted">${ubicacion}</small><br>` : ''}
+              <small class="fw-semibold">Total: ${conectoresInfo}</small>
+              <hr class="my-2">
+              <div style="max-height: 200px; overflow-y: auto;">
+                ${puntosHtml}
+              </div>
+              ${btnHtml}
+            </div>
+          `);
+
+          marker.on('popupopen', () => {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+              btn.addEventListener('click', () => {
+                this.ngZone.run(() => {
+                  this.isAdmin ? this.editarEstacion(est) : this.abrirModalReserva(est);
+                });
+              });
+            }
+          });
+        });
+      },
+      error: (err) => {
+        console.error('Error al cargar estaciones:', err);
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -272,4 +291,5 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
     this.authService.logout();
     this.router.navigate(['/']);
   }
+
 }

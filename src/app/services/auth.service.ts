@@ -1,6 +1,6 @@
 // src/app/services/auth.service.ts
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -30,6 +30,11 @@ export class AuthService {
     if (this.canUseStorage()) {
       window.localStorage.removeItem(key);
     }
+  }
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.getToken() ?? '';
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
   private normalizeRole(rawRole: unknown): 'admin' | 'cliente' {
@@ -136,6 +141,11 @@ export class AuthService {
         }
       })
     );
+  }
+
+  getUser(): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<any>(`${this.apiUrl}/user`, { headers });
   }
 
 
