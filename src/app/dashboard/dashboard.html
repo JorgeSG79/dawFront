@@ -164,7 +164,7 @@
       <router-outlet></router-outlet>
 
       <!-- Modal de Reserva -->
-      @if (showReservaModal && estacionSeleccionada) {
+      @if (reserva.visible && reserva.estacion) {
         <div class="modal d-block" style="background-color: rgba(0, 0, 0, 0.5);">
           <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -172,13 +172,13 @@
                 <h5 class="modal-title">Reservar punto de carga</h5>
                 <button type="button" class="btn-close" (click)="cerrarModalReserva()"></button>
               </div>
-              <form [formGroup]="reservaForm" (ngSubmit)="hacerReserva()">
+              <form (submit)="hacerReserva(); $event.preventDefault()">
                 <div class="modal-body">
                   <div class="mb-3">
                     <label class="form-label fw-semibold">Estación seleccionada</label>
                     <p class="card-text">
-                      <strong>{{ estacionSeleccionada.nombre }}</strong><br>
-                      <small class="text-muted">{{ estacionSeleccionada.direccion }}</small>
+                      <strong>{{ reserva.estacion.nombre }}</strong><br>
+                      <small class="text-muted">{{ reserva.estacion.direccion }}</small>
                     </p>
                   </div>
 
@@ -196,13 +196,13 @@
 
                   <div class="mb-3">
                     <label for="punto_id" class="form-label">Punto de carga</label>
-                    <select id="punto_id" class="form-select" formControlName="punto_id" required>
+                    <select id="punto_id" class="form-select" [value]="reserva.punto_id" (change)="reserva.punto_id = $any($event.target).value" required>
                       <option value="">-- Selecciona un punto --</option>
-                      @for (punto of puntosDisponibles; track punto.id) {
+                      @for (punto of reserva.puntos; track punto.id) {
                         <option [value]="punto.id">{{ punto.nombre }} (Activo)</option>
                       }
                     </select>
-                    @if (reservaForm.get('punto_id')?.invalid && reservaForm.get('punto_id')?.touched) {
+                    @if (!reserva.punto_id) {
                       <div class="invalid-feedback d-block">Debes seleccionar un punto</div>
                     }
                   </div>
@@ -210,14 +210,14 @@
                   <div class="row">
                     <div class="col-md-6">
                       <label for="fecha_reserva" class="form-label">Fecha de reserva</label>
-                      <input type="date" id="fecha_reserva" class="form-control" formControlName="fecha_reserva" required />
+                      <input type="date" id="fecha_reserva" class="form-control" [value]="reserva.fecha" (change)="reserva.fecha = $any($event.target).value" required />
                     </div>
                     <div class="col-md-6">
                       <label class="form-label">Tarifa aplicada</label>
-                      @if (estacionSeleccionada.tarifa) {
+                      @if (reserva.estacion.tarifa) {
                         <div class="form-control bg-light" aria-readonly="true">
-                          {{ estacionSeleccionada.tarifa.nombre }}
-                          <span class="text-success fw-semibold"> - {{ estacionSeleccionada.tarifa.precio_kwh }} €/kWh</span>
+                          {{ reserva.estacion.tarifa.nombre }}
+                          <span class="text-success fw-semibold"> - {{ reserva.estacion.tarifa.precio_kwh }} €/kWh</span>
                         </div>
                       } @else {
                         <div class="form-control bg-light text-muted" aria-readonly="true">Sin tarifa</div>
@@ -226,16 +226,16 @@
                     </div>
                   </div>
 
-                  @if (reservaError) {
-                    <div class="alert alert-danger mt-3 mb-0">{{ reservaError }}</div>
+                  @if (reserva.error) {
+                    <div class="alert alert-danger mt-3 mb-0">{{ reserva.error }}</div>
                   }
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" (click)="cerrarModalReserva()">
                     Cancelar
                   </button>
-                  <button type="submit" class="btn btn-primary" [disabled]="reservandoStatus || !selectedVehicle">
-                    @if (!reservandoStatus) {
+                  <button type="submit" class="btn btn-primary" [disabled]="reserva.cargando || !selectedVehicle">
+                    @if (!reserva.cargando) {
                       <i class="fa-solid fa-calendar-check me-1"></i> Reservar
                     } @else {
                       <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Reservando...

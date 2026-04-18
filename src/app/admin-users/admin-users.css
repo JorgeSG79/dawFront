@@ -1,9 +1,14 @@
-.users-hero {
+.bloque-boton-volver {
 	position: relative;
 	overflow: hidden;
 }
 
-.users-hero::after {
+.bloque-boton-volver .card-body {
+	position: relative;
+	z-index: 1;
+}
+
+.bloque-boton-volver::after {
 	content: '';
 	position: absolute;
 	right: -70px;
@@ -12,8 +17,11 @@
 	height: 180px;
 	border-radius: 50%;
 	background: rgba(255, 255, 255, 0.12);
+	pointer-events: none;
 }
 
-thead.table-light th {
-	letter-spacing: 0.02em;
+.boton-volver {
+	position: relative;
+	z-index: 2;
 }
+

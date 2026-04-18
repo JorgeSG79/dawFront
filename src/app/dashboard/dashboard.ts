@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, AfterViewInit, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, NgZone, ElementRef, ViewChild } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Component, inject, AfterViewInit, OnInit, OnDestroy, NgZone, ElementRef, ViewChild } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { AuthService } from '../services/auth.service';
@@ -9,21 +8,20 @@ import { Estacion, Punto } from '../models/interfaces';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
+
   private router = inject(Router);
   private dataService = inject(DataService);
   private authService = inject(AuthService);
-  private cdr = inject(ChangeDetectorRef);
-  private fb = inject(FormBuilder);
   private ngZone = inject(NgZone);
   @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
   private resizeListener?: () => void;
-  map: any; // Guarda la referencia aquí
+
+  map: any;
   adminMapHeightPx: number | null = null;
   misCoches: any[] = [];
   estacionesCount = 0;
@@ -31,17 +29,17 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
   userRole = 'cliente';
   userName = 'Usuario';
 
-  // Estado del modal de reserva
-  showReservaModal = false;
-  estacionSeleccionada: Estacion | null = null;
-  puntosDisponibles: Punto[] = [];
-  reservaForm = this.fb.group({
-    punto_id: ['', Validators.required],
-    fecha_reserva: [new Date().toISOString().split('T')[0], Validators.required],
-    tarifa_id: [null as number | null],
-  });
-  reservandoStatus = false;
-  reservaError = '';
+  // Estado del modal de reserva consolidado
+  reserva = {
+    visible: false,
+    estacion: null as Estacion | null,
+    puntos: [] as Punto[],
+    punto_id: '',
+    fecha: new Date().toISOString().split('T')[0],
+    tarifa_id: null as number | null,
+    cargando: false,
+    error: ''
+  };
 
 
   get isAdmin() {
@@ -57,42 +55,16 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private resolveIsAdmin(user: any): boolean {
-    const candidates = [
-      user?.rol,
-      user?.role,
-      user?.perfil,
-      user?.tipo,
-      user?.tipo_usuario,
-      user?.rol_nombre,
-    ];
+    if (!user) return false;
 
-    for (const value of candidates) {
-      if (typeof value === 'string') {
-        const normalized = value
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .trim();
+    const adminValue = user.rol || user.role || user.tipo || user.is_admin || user.admin;
+    if (!adminValue) return false;
 
-        if (normalized === 'admin' || normalized === 'administrador') {
-          return true;
-        }
-      }
+    if (typeof adminValue === 'number') return adminValue === 1;
+    if (adminValue === true) return true;
 
-      if (typeof value === 'number' && value === 1) {
-        return true;
-      }
-    }
-
-    if (user?.is_admin === true || user?.admin === true) {
-      return true;
-    }
-
-    if (user?.is_admin === 1 || user?.admin === 1) {
-      return true;
-    }
-
-    return false;
+    const normalized = String(adminValue).toLowerCase().replace(/á|é|í|ó|ú/g, 'a');
+    return normalized === 'admin' || normalized === 'administrador';
   }
 
   private getEstadoPunto(punto: Punto): string {
@@ -108,25 +80,13 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private ajustarAlturaMapaAdmin() {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    if (!this.isAdmin) {
+    if (typeof window === 'undefined' || !this.isAdmin || !this.mapContainer?.nativeElement) {
       this.adminMapHeightPx = null;
-      this.cdr.markForCheck();
       return;
     }
 
-    const mapElement = this.mapContainer?.nativeElement;
-    if (!mapElement) {
-      return;
-    }
-
-    const margenInferior = 16;
-    const alturaDisponible = Math.floor(window.innerHeight - mapElement.getBoundingClientRect().top - margenInferior);
-    this.adminMapHeightPx = Math.max(380, alturaDisponible);
-    this.cdr.markForCheck();
+    const {top} = this.mapContainer.nativeElement.getBoundingClientRect();
+    this.adminMapHeightPx = Math.max(380, Math.floor(window.innerHeight - top - 16));
 
     if (this.map) {
       setTimeout(() => this.map.invalidateSize(), 0);
@@ -138,17 +98,14 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
     const isAdminUser = this.resolveIsAdmin(user) || this.authService.isAdmin();
     this.userRole = isAdminUser ? 'admin' : 'cliente';
     this.userName = user?.nombre ?? user?.name ?? 'Usuario';
-    this.cdr.markForCheck();
 
     if (this.isCliente) {
       this.dataService.getMisVehiculos().subscribe({
         next: (coches) => {
           this.misCoches = coches;
-          this.cdr.markForCheck();
         },
         error: () => {
           this.misCoches = [];
-          this.cdr.markForCheck();
         }
       });
     }
@@ -156,20 +113,19 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
 
   selectVehicle(index: number) {
     this.selectedVehicleIndex = index;
-    this.cdr.markForCheck();
   }
 
   abrirModalReserva(estacion: Estacion) {
-    this.estacionSeleccionada = estacion;
-    this.puntosDisponibles = estacion.puntos?.filter(p => this.isPuntoDisponible(p)) ?? [];
-    this.showReservaModal = true;
-    this.reservaError = '';
-    this.reservaForm.reset({
+    this.reserva = {
+      visible: true,
+      estacion,
+      puntos: estacion.puntos?.filter(p => this.isPuntoDisponible(p)) ?? [],
       punto_id: '',
-      fecha_reserva: new Date().toISOString().split('T')[0],
+      fecha: new Date().toISOString().split('T')[0],
       tarifa_id: estacion.tarifa?.id ?? null,
-    });
-    this.cdr.markForCheck();
+      cargando: false,
+      error: ''
+    };
   }
 
   editarEstacion(estacion: Estacion) {
@@ -179,39 +135,33 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
   }
 
   cerrarModalReserva() {
-    this.showReservaModal = false;
-    this.estacionSeleccionada = null;
-    this.puntosDisponibles = [];
-    this.cdr.markForCheck();
+    this.reserva.visible = false;
+    this.reserva.estacion = null;
+    this.reserva.puntos = [];
   }
 
   hacerReserva() {
-    this.reservaError = '';
-    if (!this.reservaForm.valid || !this.selectedVehicle) {
-      this.reservaError = 'Por favor, completa todos los campos.';
+    this.reserva.error = '';
+    if (!this.reserva.punto_id || !this.reserva.fecha || !this.selectedVehicle) {
+      this.reserva.error = 'Por favor, completa todos los campos.';
       return;
     }
 
-    this.reservandoStatus = true;
-    const reserva = {
+    this.reserva.cargando = true;
+    this.dataService.crearReserva({
       vehiculo_id: this.selectedVehicle.id,
-      punto_id: Number(this.reservaForm.get('punto_id')?.value),
-      fecha_reserva: this.reservaForm.get('fecha_reserva')?.value ?? '',
-      tarifa_id: this.reservaForm.get('tarifa_id')?.value ?? null,
-    };
-
-    this.dataService.crearReserva(reserva).subscribe({
-      next: (res) => {
-        this.reservandoStatus = false;
-        this.cdr.markForCheck();
+      punto_id: Number(this.reserva.punto_id),
+      fecha_reserva: this.reserva.fecha,
+      tarifa_id: this.reserva.tarifa_id ?? null,
+    }).subscribe({
+      next: () => {
+        this.reserva.cargando = false;
         this.cerrarModalReserva();
-        // Mostrar mensaje de éxito (opcional)
         alert('¡Reserva realizada con éxito!');
       },
       error: (err) => {
-        this.reservandoStatus = false;
-        this.reservaError = err?.error?.message || 'Error al realizar la reserva.';
-        this.cdr.markForCheck();
+        this.reserva.cargando = false;
+        this.reserva.error = err?.error?.message || 'Error al realizar la reserva.';
       }
     });
   }
@@ -221,7 +171,7 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
       const L = await import('leaflet');
 
       // Inicializamos el mapa
-      this.map = L.map('map').setView([40.4168, -3.7038], 9);
+      this.map = L.map('map').setView([40.4168, -3.7038], 7);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
@@ -230,7 +180,6 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
       this.dataService.getEstaciones().subscribe({
         next: (estaciones) => {
           this.estacionesCount = estaciones.length;
-          this.cdr.markForCheck();
 
           estaciones.forEach(est => {
             const lat = Number(est.latitud);
@@ -262,6 +211,11 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
             });
             puntosHtml += '</tbody></table>';
 
+            const btnId = `btn-${this.isAdmin ? 'edit' : 'reserva'}-${est.id}`;
+            const btnHtml = this.isAdmin
+              ? `<button id="${btnId}" class="btn btn-sm btn-warning w-100 mt-2"><i class="fa-solid fa-pen-to-square"></i> Editar estación</button>`
+              : `<button id="${btnId}" class="btn btn-sm btn-primary w-100 mt-2"><i class="fa-solid fa-calendar-check"></i> Hacer reserva</button>`;
+
             marker.bindPopup(`
               <div style="width: 300px;">
                 <b>${est.nombre}</b><br>
@@ -272,36 +226,18 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
                 <div style="max-height: 200px; overflow-y: auto;">
                   ${puntosHtml}
                 </div>
-                ${this.isAdmin
-                  ? `<button id="btn-edit-station-${est.id}" class="btn btn-sm btn-warning w-100 mt-2">
-                      <i class="fa-solid fa-pen-to-square"></i> Editar estación
-                    </button>`
-                  : `<button id="btn-reserva-${est.id}" class="btn btn-sm btn-primary w-100 mt-2">
-                      <i class="fa-solid fa-calendar-check"></i> Hacer reserva
-                    </button>`}
+                ${btnHtml}
               </div>
             `);
 
-            // Agregar listener al botón de acción según el rol
             marker.on('popupopen', () => {
-              if (this.isAdmin) {
-                const btnEdit = document.getElementById(`btn-edit-station-${est.id}`);
-                if (btnEdit) {
-                  btnEdit.addEventListener('click', () => {
-                    this.ngZone.run(() => {
-                      this.editarEstacion(est);
-                    });
+              const btn = document.getElementById(btnId);
+              if (btn) {
+                btn.addEventListener('click', () => {
+                  this.ngZone.run(() => {
+                    this.isAdmin ? this.editarEstacion(est) : this.abrirModalReserva(est);
                   });
-                }
-              } else {
-                const btnReserva = document.getElementById(`btn-reserva-${est.id}`);
-                if (btnReserva) {
-                  btnReserva.addEventListener('click', () => {
-                    this.ngZone.run(() => {
-                      this.abrirModalReserva(est);
-                    });
-                  });
-                }
+                });
               }
             });
           });
@@ -311,7 +247,6 @@ export class Dashboard implements AfterViewInit, OnInit, OnDestroy {
         }
       });
 
-      // El timeout es perfecto para asegurar que el CSS de Flexbox se aplicó
       setTimeout(() => {
         this.map.invalidateSize();
         this.ajustarAlturaMapaAdmin();

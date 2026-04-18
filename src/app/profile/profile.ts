@@ -48,7 +48,7 @@ export class Profile implements OnInit {
     lastName: 'Pérez',
     email: 'juan.perez@email.com',
     role: 'Administrador',
-    joinedDate: 'Marzo 2024',
+    joinedDate: '2023-01-15',
     avatar: 'https://ui-avatars.com/api/?name=Juan+Perez&background=e3f2fd&color=0d6efd&size=128'
   };
 
@@ -91,13 +91,15 @@ export class Profile implements OnInit {
 
   private loadUserData() {
     const currentUser = this.authService.getCurrentUser();
+    console.log(currentUser);
+
     if (currentUser) {
       this.user = {
         firstName: currentUser.nombre || currentUser.firstName || 'Usuario',
         lastName: currentUser.apellido || currentUser.lastName || '',
         email: currentUser.email || '',
         role: currentUser.rol || 'cliente',
-        joinedDate: currentUser.joinedDate || 'Desconocida',
+        joinedDate:  'Desconocida',
         avatar: `https://ui-avatars.com/api/?name=${currentUser.nombre || 'User'}&background=e3f2fd&color=0d6efd&size=128`,
       };
       this.editableProfile = {
@@ -153,6 +155,8 @@ export class Profile implements OnInit {
     request$.subscribe({
       next: (vehiculo) => {
         console.log('vehiculo creado', vehiculo);
+        this.showVehicleForm = false;
+        this.vehicleCreated = true;
       },
       error: (err) => {
         this.vehicleError = err?.error?.message || 'No se pudo guardar el vehiculo.';

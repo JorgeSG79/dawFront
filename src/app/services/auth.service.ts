@@ -68,6 +68,8 @@ export class AuthService {
           this.setStorageItem('token', response.token);
 
           const user = this.getUserFromResponse(response);
+          console.log(user);
+
           if (user) {
             const normalizedUser = {
               ...user,

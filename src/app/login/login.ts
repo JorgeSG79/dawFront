@@ -1,36 +1,58 @@
 // login.ts
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service'; // <--- Importa el servicio
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
 export class Login {
-  loginForm;
+  email = signal('');
+  password = signal('');
+  submitted = signal(false);
   loading = signal(false);
   error = signal('');
 
-  private fb = inject(FormBuilder);
   private router = inject(Router);
-  private authService = inject(AuthService); // <--- Inyectamos el AuthService
+  private authService = inject(AuthService);
 
-  constructor() {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(4)]],
-    });
+  updateEmail(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.email.set(value);
+  }
+
+  updatePassword(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.password.set(value);
+  }
+
+  private isEmailValid() {
+    const value = this.email().trim();
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
+  private isPasswordValid() {
+    return this.password().length >= 4;
+  }
+
+  isEmailInvalid() {
+    return this.submitted() && !this.isEmailValid();
+  }
+
+  isPasswordInvalid() {
+    return this.submitted() && !this.isPasswordValid();
   }
 
   submit() {
     this.error.set('');
-    if (this.loginForm.invalid) {
+    this.submitted.set(true);
+
+    if (!this.isEmailValid() || !this.isPasswordValid()) {
       this.error.set('Por favor, completa todos los campos correctamente.');
       return;
     }
@@ -38,7 +60,10 @@ export class Login {
     this.loading.set(true);
 
     // LLAMADA REAL AL BACKEND
-    this.authService.login(this.loginForm.value).subscribe({
+    this.authService.login({
+      email: this.email().trim(),
+      password: this.password(),
+    }).subscribe({
       next: (res) => {
         this.loading.set(false);
         console.log('Login exitoso', res);

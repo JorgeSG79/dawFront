@@ -1,9 +1,9 @@
-.recargas-hero {
+.recargas {
 	position: relative;
 	overflow: hidden;
 }
 
-.recargas-hero::before {
+.recargas::before {
 	content: '';
 	position: absolute;
 	right: -45px;
@@ -13,6 +13,7 @@
 	border-radius: 16px;
 	transform: rotate(24deg);
 	background: rgba(255, 255, 255, 0.1);
+	pointer-events: none;
 }
 
 .detail-row td {

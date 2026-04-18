@@ -1,9 +1,9 @@
-.tarifas-hero {
+.tarifas {
 	position: relative;
 	overflow: hidden;
 }
 
-.tarifas-hero::before {
+.tarifas::before {
 	content: '';
 	position: absolute;
 	left: -60px;

@@ -1,8 +1,6 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { finalize } from 'rxjs';
 import { DataService } from '../services/data.service';
 import { AuthService } from '../services/auth.service';
 import { Tarifa } from '../models/interfaces';
@@ -10,16 +8,16 @@ import { Tarifa } from '../models/interfaces';
 @Component({
   selector: 'app-admin-tarifas',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './admin-tarifas.html',
   styleUrl: './admin-tarifas.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
+
 export class AdminTarifas implements OnInit {
+  
   private dataService = inject(DataService);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
 
   tarifas: Tarifa[] = [];
   loading = true;
@@ -46,24 +44,17 @@ export class AdminTarifas implements OnInit {
   private loadTarifas() {
     this.loading = true;
     this.error = '';
-    this.cdr.markForCheck();
 
     this.dataService.getTarifas()
-      .pipe(
-        finalize(() => {
-          this.loading = false;
-          this.cdr.markForCheck();
-        })
-      )
       .subscribe({
         next: (tarifas) => {
           this.tarifas = Array.isArray(tarifas) ? tarifas : [];
-          this.cdr.markForCheck();
+          this.loading = false;
         },
         error: (err) => {
           this.error = err?.error?.message || 'No se pudieron cargar las tarifas.';
           this.tarifas = [];
-          this.cdr.markForCheck();
+          this.loading = false;
         }
       });
   }
@@ -74,7 +65,6 @@ export class AdminTarifas implements OnInit {
     this.form.precio_kwh = String(tarifa.precio_kwh ?? '');
     this.error = '';
     this.success = '';
-    this.cdr.markForCheck();
   }
 
   cancelEdit() {
@@ -82,7 +72,6 @@ export class AdminTarifas implements OnInit {
     this.form = { nombre: '', precio_kwh: '' };
     this.error = '';
     this.success = '';
-    this.cdr.markForCheck();
   }
 
   submitTarifa() {
@@ -94,7 +83,6 @@ export class AdminTarifas implements OnInit {
 
     if (!nombre || Number.isNaN(precio) || precio < 0) {
       this.error = 'Introduce un nombre y un precio por kWh valido.';
-      this.cdr.markForCheck();
       return;
     }
 
@@ -105,22 +93,17 @@ export class AdminTarifas implements OnInit {
       : this.dataService.crearTarifa(payload);
 
     request$
-      .pipe(
-        finalize(() => {
-          this.submitting = false;
-          this.cdr.markForCheck();
-        })
-      )
       .subscribe({
         next: () => {
           this.success = this.editingId ? 'Tarifa actualizada correctamente.' : 'Tarifa creada correctamente.';
           this.editingId = null;
           this.form = { nombre: '', precio_kwh: '' };
+          this.submitting = false;
           this.loadTarifas();
         },
         error: (err) => {
           this.error = err?.error?.message || 'No se pudo guardar la tarifa.';
-          this.cdr.markForCheck();
+          this.submitting = false;
         }
       });
   }
@@ -134,26 +117,20 @@ export class AdminTarifas implements OnInit {
     this.error = '';
     this.success = '';
     this.deletingId = tarifa.id;
-    this.cdr.markForCheck();
 
     this.dataService.eliminarTarifa(tarifa.id)
-      .pipe(
-        finalize(() => {
-          this.deletingId = null;
-          this.cdr.markForCheck();
-        })
-      )
       .subscribe({
         next: () => {
           if (this.editingId === tarifa.id) {
             this.cancelEdit();
           }
           this.success = 'Tarifa eliminada correctamente.';
+          this.deletingId = null;
           this.loadTarifas();
         },
         error: (err) => {
           this.error = err?.error?.message || 'No se pudo eliminar la tarifa.';
-          this.cdr.markForCheck();
+          this.deletingId = null;
         }
       });
   }

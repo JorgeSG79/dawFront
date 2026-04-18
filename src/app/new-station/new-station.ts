@@ -13,6 +13,7 @@ import { Estacion, Punto } from '../models/interfaces';
   templateUrl: './new-station.html',
   styleUrl: './new-station.css',
 })
+
 export class NewStation implements OnInit {
   private dataService = inject(DataService);
   private authService = inject(AuthService);
@@ -21,6 +22,7 @@ export class NewStation implements OnInit {
 
   loadingStation = false;
   submitting = false;
+  deleting = false;
   success = false;
   error = '';
   isEditMode = false;
@@ -243,6 +245,32 @@ export class NewStation implements OnInit {
         this.error = this.isEditMode
           ? 'Error al actualizar la estación. Inténtalo de nuevo.'
           : 'Error al crear la estación. Inténtalo de nuevo.';
+      }
+    });
+  }
+
+  deleteStation() {
+    if ( !this.editStationId) {
+      return;
+    }
+
+    const confirmed = window.confirm('¿Seguro que quieres borrar esta estación? Esta acción no se puede deshacer.');
+    if (!confirmed) {
+      return;
+    }
+
+    this.error = '';
+    this.success = false;
+    this.deleting = true;
+
+    this.dataService.eliminarEstacion(this.editStationId).subscribe({
+      next: () => {
+        this.deleting = false;
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err: { error?: { message?: string } }) => {
+        this.deleting = false;
+        this.error = err?.error?.message || 'No se pudo borrar la estación. Inténtalo de nuevo.';
       }
     });
   }
