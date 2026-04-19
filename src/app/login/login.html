@@ -2,14 +2,14 @@
 	<h2 class="mb-4 text-center">Iniciar sesión</h2>
 	<div class="mb-3">
 		<label for="email" class="form-label">Email</label>
-		<input id="email" type="email" [value]="email()" (input)="updateEmail($event)" autocomplete="username" class="form-control" [class.is-invalid]="isEmailInvalid()" />
+		<input id="email" type="email" [value]="email()" (input)="updateEmail($event)" autocomplete="off" class="form-control" [class.is-invalid]="isEmailInvalid()" />
 		@if (isEmailInvalid()) {
 			<div class="invalid-feedback">Email inválido</div>
 		}
 	</div>
 	<div class="mb-3">
 		<label for="password" class="form-label">Contraseña</label>
-		<input id="password" type="password" [value]="password()" (input)="updatePassword($event)" autocomplete="current-password" class="form-control" [class.is-invalid]="isPasswordInvalid()" />
+		<input id="password" type="password" [value]="password()" (input)="updatePassword($event)" autocomplete="off" class="form-control" [class.is-invalid]="isPasswordInvalid()" />
 		@if (isPasswordInvalid()) {
 			<div class="invalid-feedback">Contraseña requerida (mínimo 4 caracteres)</div>
 		}

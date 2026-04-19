@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { AuthService } from '../services/auth.service';
-import { Estacion, Punto } from '../models/interfaces';
+import { Estacion, Punto, Tarifa } from '../models/interfaces';
 
 @Component({
   selector: 'app-new-station',
@@ -27,11 +27,7 @@ export class NewStation implements OnInit {
   error = '';
   isEditMode = false;
   editStationId: number | null = null;
-  readonly tarifasDisponibles = [
-    { id: 1, nombre: 'Tarifa 1 - Económica' },
-    { id: 2, nombre: 'Tarifa 2 - Estándar' },
-    { id: 3, nombre: 'Tarifa 3 - Premium' },
-  ];
+  tarifasDisponibles: Tarifa[] = [];
 
   stationData = {
     nombre: '',
@@ -53,6 +49,8 @@ export class NewStation implements OnInit {
       return;
     }
 
+    this.cargarTarifas();
+
     const stationIdParam = this.route.snapshot.paramMap.get('id') ?? this.route.snapshot.queryParamMap.get('stationId');
     const parsedId = stationIdParam ? Number(stationIdParam) : Number.NaN;
     if (Number.isFinite(parsedId) && parsedId > 0) {
@@ -68,6 +66,21 @@ export class NewStation implements OnInit {
 
       this.cargarEstacionParaEdicion(parsedId);
     }
+  }
+
+  private cargarTarifas() {
+    this.dataService.getTarifas()
+      .subscribe({
+        next: (tarifas) => {
+          this.tarifasDisponibles = Array.isArray(tarifas) ? tarifas : [];
+          if (!this.tarifasDisponibles.some((tarifa) => tarifa.id === this.stationData.tarifa_id)) {
+            this.stationData.tarifa_id = this.tarifasDisponibles[0]?.id ?? 0;
+          }
+        },
+        error: () => {
+          this.tarifasDisponibles = [];
+        }
+      });
   }
 
   private cargarEstacionParaEdicion(stationId: number) {

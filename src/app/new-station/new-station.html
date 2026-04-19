@@ -88,7 +88,7 @@
                 <option [value]="tarifa.id">{{ tarifa.nombre }}</option>
               }
             </select>
-            <small class="text-muted compact-help-text">Selecciona una de las 3 tarifas existentes.</small>
+            <small class="text-muted compact-help-text">Selecciona una tarifa existente para esta estación.</small>
           </div>
 
           <div class="col-md-6">
@@ -102,7 +102,7 @@
             <label class="form-label fw-semibold">Conectores disponibles</label>
             <input type="text" class="form-control" [value]="stationData.conectores_disponibles"
               (input)="updateField('conectores_disponibles', $event)"
-              placeholder="Ej: Type 2, CCS" />
+              placeholder="Conector 1, Conector 2, ..." />
           </div>
 
           <div class="col-md-4">
