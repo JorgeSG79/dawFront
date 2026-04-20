@@ -42,7 +42,7 @@ export class Profile implements OnInit {
     matricula: '',
   };
 
-  // Datos de ejemplo (esto vendría de un servicio)
+  // Datos de ejemplo (esto vendrá parecido en mi llamada)
   user = {
     firstName: 'Juan',
     lastName: 'Pérez',

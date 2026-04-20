@@ -1,8 +1,7 @@
-// login.ts
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { AuthService } from '../services/auth.service'; // <--- Importa el servicio
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -71,7 +70,6 @@ export class Login {
       },
       error: (err) => {
         this.loading.set(false);
-        // Manejo de errores (ej: usuario no encontrado o password mal)
         this.error.set(err.error?.message || 'Error al iniciar sesión. Inténtalo de nuevo.');
       }
     });
